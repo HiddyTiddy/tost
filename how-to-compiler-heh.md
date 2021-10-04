@@ -1,12 +1,19 @@
 > Compilers are awesome? ? ? 
 
 
-- Lexer/Parser
+- Lexer
     - can we quit pls
     - mom come pick me up im scared
     - EBNf
     - sequence of charred жaracters => sequence of tokens
-- AST Generator
+    - sequence of чaracters
+- Parser
+    - sequence of tokens -> grammar (tree)
+    - statement
+    - expression (+, -, \*, /, <, >, etc.)
+    - function
+- AST (Abstract Syntax Tree) Generator
+    - ?
 - Type Checker
 - Code Generation
 
