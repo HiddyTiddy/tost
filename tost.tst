@@ -10,5 +10,6 @@ toaster func_name <Bread arg> -> Toast :{
 }:
 
 toaster main<> {:
+    serve(message);
     serve(func_name());
 :}
