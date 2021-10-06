@@ -14,6 +14,6 @@
     - function
 - AST (Abstract Syntax Tree) Generator
     - ?
-- Type Checker
+- Type Checker (in version 4.0.0)
 - Code Generation
 
