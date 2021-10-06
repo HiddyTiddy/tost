@@ -43,17 +43,19 @@ fn lexer(code: String) -> Vec<Tostsken> {
             }
             continue;
         }
+        // works but doesnt
         match ch {
             ' ' => {
                 tokens.push(Tostsken::Word(word.clone()));
                 word = String::from("");
                 continue;
-            }
+            },
             ',' | ':' | '<' | '>' | '(' | ')' | '.' | ';' | '\n' | '\t' => {
                 tokens.push(Tostsken::Word(word.clone()));
                 word = String::from("");
-                tokens.push(Tostsken::OperatorOrSthIdk(String::from(ch).clone()))
-            }
+                tokens.push(Tostsken::OperatorOrSthIdk(String::from(ch).clone()));
+                continue;
+            },
             _ => {}
         }
         word.push(ch);
