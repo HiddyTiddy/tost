@@ -1,9 +1,8 @@
-
 pub mod lex {
 
-    use crate::Tostsken;
+    use crate::defs::parse::Tostsken;
 
-pub fn lexer(code: String) -> Vec<Tostsken> {
+    pub fn lexer(code: String) -> Vec<Tostsken> {
         let mut tokens = vec![];
         let mut word = String::from("");
         let mut commenting = false;
