@@ -9,4 +9,19 @@ pub mod parse {
         // Number(String),
         OperatorOrSthIdk(String),
     }
+
+    pub mod parse_tree {
+        #[derive(Debug)]
+        pub enum Typs <'a>{
+            ChildNode(&'a Node<'a>),
+            Atom(String)
+            
+        }
+        
+        #[derive(Debug)]
+        pub struct Node<'a> {
+            pub children: Vec<Typs<'a>>,
+        }
+    }
+
 }
