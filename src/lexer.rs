@@ -35,6 +35,10 @@ pub mod lex {
             }
             word.push(ch);
         }
+        // still eats newline but eh
+        if !word.is_empty() {
+            tokens.push(Tostsken::Word(word));
+        }
 
         tokens
     }
