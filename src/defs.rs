@@ -6,6 +6,7 @@ pub mod parse {
         // Expression(String),
         // Function(String),
         Word(String),
+        WhiteSpace(String),
         // Number(String),
         OperatorOrSthIdk(String),
     }

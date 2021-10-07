@@ -24,7 +24,10 @@ pub mod lex {
                     tokens.push(Tostsken::Word(word.clone()));
                     word = String::from("");
                     // if ch != ' '{ // actually preserve all white space
-                    tokens.push(Tostsken::OperatorOrSthIdk(String::from(ch).clone()));
+                    tokens.push(match ch {
+                        ' ' | '\n' | '\t' => Tostsken::WhiteSpace(String::from(ch).clone()),
+                        _ => Tostsken::OperatorOrSthIdk(String::from(ch).clone()),
+                    });
                     // }
                     continue;
                 }
