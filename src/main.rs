@@ -1,16 +1,14 @@
+mod lexer;
+mod defs;
+
 use std::fs::File;
 use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
 
-#[derive(Debug)]
-enum Tostsken {
-    // Statement(String),
-    // Expression(String),
-    // Function(String),
-    Word(String),
-    OperatorOrSthIdk(String),
-}
+pub use lexer::lex;
+pub use defs::parse::Tostsken;
+// use regex::Regex;
 
 // no idea
 fn read_file(fname: &str) -> Result<String, io::Error> {
@@ -28,41 +26,7 @@ fn read_file(fname: &str) -> Result<String, io::Error> {
     Ok(out)
 }
 
-fn lexer(code: String) -> Vec<Tostsken> {
-    let mut tokens = vec![];
-    let mut word = String::from("");
-    let mut commenting = false;
-    for ch in code.chars() {
-        if word == "!!" {
-            commenting = true;
-            word = String::from("");
-        }
-        if commenting {
-            if ch == '\n' {
-                commenting = false;
-            }
-            continue;
-        }
-        // works but doesnt
-        match ch {
-            ' ' => {
-                tokens.push(Tostsken::Word(word.clone()));
-                word = String::from("");
-                continue;
-            },
-            ',' | ':' | '<' | '>' | '(' | ')' | '.' | ';' | '\n' | '\t' => {
-                tokens.push(Tostsken::Word(word.clone()));
-                word = String::from("");
-                tokens.push(Tostsken::OperatorOrSthIdk(String::from(ch).clone()));
-                continue;
-            },
-            _ => {}
-        }
-        word.push(ch);
-    }
 
-    tokens
-}
 
 fn main() {
     let source = match read_file("./tost.tst") {
@@ -73,7 +37,7 @@ fn main() {
         }
     };
     println!("{}", source);
-    let lex = lexer(source);
+    let lex = lex::lexer(source);
     println!("{:?}", lex);
     println!("[\x1b[0;34mtost\x1b[0m]");
 }
