@@ -1,5 +1,7 @@
 mod lexer;
 mod defs;
+mod parser;
+
 
 use std::fs::File;
 use std::io;
@@ -7,7 +9,8 @@ use std::io::BufRead;
 use std::io::BufReader;
 
 pub use lexer::lex;
-pub use defs::parse::Tostsken;
+pub use defs::parse;
+pub use parser::parse_tree;
 // use regex::Regex;
 
 // no idea
@@ -38,6 +41,8 @@ fn main() {
     };
     println!("{}", source);
     let lex = lex::lexer(source);
-    println!("{:?}", lex);
+    println!("{:?}\n\n", lex);
+    let parsed = parse_tree::parse(lex);
+    println!("{:?}", parsed);
     println!("[\x1b[0;34mtost\x1b[0m]");
 }
