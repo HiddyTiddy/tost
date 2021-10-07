@@ -32,7 +32,7 @@ fn read_file(fname: &str) -> Result<String, io::Error> {
 
 
 fn main() {
-    let source = match read_file("./tost.tst") {
+    let source = match read_file("./foo.tst") {
         Ok(data) => data,
         Err(err) => {
             eprintln!("couldn't read file {}", err);
