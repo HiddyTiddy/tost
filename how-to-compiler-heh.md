@@ -17,3 +17,4 @@
 - Type Checker (in version 4.0.0)
 - Code Generation
 
+https://stackoverflow.com/questions/5026517/whats-the-difference-between-parse-trees-and-abstract-syntax-trees-asts
