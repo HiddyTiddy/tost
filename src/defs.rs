@@ -1,6 +1,6 @@
 pub mod parse {
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub enum Tostsken {
         // Statement(String),
         // Expression(String),
