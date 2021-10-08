@@ -41,5 +41,5 @@ fn main() {
     // println!("{:?}\n\n", lex);
     let parsed = parse_tree::parse(lex);
     println!("{:?}", parsed);
-    println!("[\x1b[0;34mtost\x1b[0m]");
+    //println!("[\x1b[0;34mtost\x1b[0m]");
 }
