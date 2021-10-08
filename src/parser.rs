@@ -62,6 +62,10 @@ pub mod parse_tree {
                     let mut child_node = Node::new();
                     if let Tostsken::FunctionToaster = child[0] {
                         // TODO: only parse_funcs of function body oops
+                        // currently only parses functions like `toaster main {:`
+                        // instead of `toaster main <args> {:`
+                        // actually just parses the function body
+                        // but we never actually wanted to call the functions, right?
                         child_node.parse_funcs(find_function_body(child));
                     } else {
                         child_node.parse_statements(child);
@@ -94,15 +98,15 @@ pub mod parse_tree {
                 if let Tostsken::Brace(brace) = &token {
                     match brace.as_str() {
                         ":}" | "}:" => depth -= 1,
-                        "{:" | ":{" => depth+= 1,  
-                        _ => ()
+                        "{:" | ":{" => depth += 1,
+                        _ => (),
                     };
                 }
-                if depth == 0{
+                if depth == 0 {
                     break;
                 }
                 out.push(token);
-            }else if let Tostsken::Brace(brace) = token {
+            } else if let Tostsken::Brace(brace) = token {
                 if brace == "{:" || brace == ":{" {
                     in_body = true;
                 } else {
@@ -126,6 +130,7 @@ pub mod parse_tree {
         //                                                   //
         //                                                   //
         ///////////////////////////////////////////////////////
+        // ^smart idea
         let mut out = Node::new();
         out.parse_funcs(tokens);
         out
@@ -133,5 +138,6 @@ pub mod parse_tree {
 
     pub fn parse(tokens: Vec<Tostsken>) -> Node {
         actual_parser(tokens)
+        // no idea what i thought here
     }
 }
