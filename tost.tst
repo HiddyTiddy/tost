@@ -1,7 +1,7 @@
 !! this is a comment
 !! sample tost program
 
-charred message "Hello Tost"
+charred message "Hello Tost";
 
 !! happy function: doesnt return anything, has {:  :}
 !! sad function: returns Toast that's so sad :{  }:
