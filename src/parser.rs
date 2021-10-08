@@ -2,53 +2,71 @@ pub mod parse_tree {
     use crate::defs::parse::parse_tree::*;
     use crate::defs::parse::Tostsken;
 
-    fn slice(tokens: Vec<Tostsken>) -> Vec<Vec<Tostsken>> {
-        // TODO: find start & end of statement
-
-        let mut out = vec![];
-
-        let mut current = vec![];
-        // step 1 just worry abt functions
-        let mut depth = -1;
-        for i in tokens {
-            // if true /* TODO this condition kinda is the most important part */ {
-
-            //     out.push(current);
-            //     current = vec![];
-            // }
-
-            match i {
-                Tostsken::FunctionToaster => {
-                    if depth == -1
-                    // completely outside of functions
-                    {
-                        depth = 1; // we are now in the function
-                        out.push(current);
-                        current = vec![];
-                    }
-                }
-                Tostsken::Brace(ref op) => {
-                    if depth > 0 && (op == ":}" || op == "}:") {
-                        depth -= 1;
-                    }
-                }
-                _ => (),
-            };
-            current.push(i);
-            if depth == 0 {
-                out.push(current);
-                depth = -1;
-                current = vec![];
-            }
+    impl Default for Node {
+        fn default() -> Self {
+            Self::new()
         }
-        if !current.is_empty() {
-            out.push(current);
-        }
-
-        out
     }
 
-    fn actual_parser<'a>(tokens: Vec<Tostsken>) -> Node<'a> {
+    impl Node {
+        pub fn new() -> Node {
+            Node {
+                children: vec![],
+                content: None,
+            }
+        }
+
+        fn parse_funcs(&mut self, tokens: Vec<Tostsken>) {
+            let mut all = vec![];
+            let mut current = vec![];
+            let mut depth = -1;
+            for i in tokens {
+                match i {
+                    Tostsken::FunctionToaster => {
+                        if depth == -1
+                        // completely outside of functions
+                        {
+                            depth = 1; // we are now in the function
+                            all.push(current);
+                            current = vec![];
+                        }
+                    }
+                    Tostsken::Brace(ref op) => {
+                        if depth > 0 && (op == ":}" || op == "}:") {
+                            depth -= 1;
+                        }
+                    }
+                    _ => (),
+                };
+                current.push(i);
+                if depth == 0 {
+                    all.push(current);
+                    depth = -1;
+                    current = vec![];
+                }
+            }
+            if !current.is_empty() {
+                all.push(current);
+            }
+
+            for child in all {
+                let mut child_node = Node::new();
+                // if let Tostsken::FunctionToaster = child[0] {
+                child_node.parse_statements(child);
+                self.children.push(child_node);
+                // }
+                // else {
+                //     self.children.push(child_node);
+                // }
+            }
+        }
+
+        fn parse_statements(&mut self, tokens: Vec<Tostsken>) {
+            unimplemented!();
+        }
+    }
+
+    fn actual_parser(tokens: Vec<Tostsken>) -> Node {
         // TODO: -> pass tokens[start..end] to actual_parser and tokens[end..] to actual_parser
         // TODO: find start & end of tokens
         // TODO: fix everythinf
@@ -60,48 +78,12 @@ pub mod parse_tree {
         //                                                   //
         //                                                   //
         ///////////////////////////////////////////////////////
-        
-        let sliced = slice(tokens);
-
-        for i in sliced.iter() {
-            if !i.is_empty() {
-                if let Tostsken::FunctionToaster = i[0] { print!("\nfunction:  ") };
-                println!("{:?}\n", i);
-            }
-        }
-
-        unimplemented!();
+        let mut out = Node::new();
+        out.parse_funcs(tokens);
+        out
     }
 
-    impl<'a> Default for Node<'a> {
-        fn default() -> Self {
-            Self::new()
-        }
-    }
-
-    impl<'a> Node<'a> {
-        pub fn new() -> Node<'a> {
-            Node { children: vec![] }
-        }
-
-        pub fn expand(&mut self) {}
-    }
-
-    pub fn parse<'a>(tokens: Vec<Tostsken>) -> Node<'a> {
-        // let root = Node::new();
-
+    pub fn parse(tokens: Vec<Tostsken>) -> Node {
         actual_parser(tokens)
-        // match &tokens[0] {
-        //     Tostsken::OperatorOrSthIdk(op) => {
-        //         if op.as_str() == "=" {
-        //             root.children.push(Typs::Atom(op.to_string()));
-        //         };
-        //     },
-        //     Tostsken::Word(word) => {
-        //         root.children.push(
-        //             Typs::Atom(word.to_string())
-        //         );
-        //     },
-        // }
     }
 }
