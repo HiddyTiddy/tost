@@ -1,3 +1,5 @@
 /target
 
 foo.tst
+/.vscode
+/.vscode/*
