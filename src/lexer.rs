@@ -11,6 +11,9 @@ pub mod lex {
             self.push
             (match val.as_str() {
                 "toaster" => Tostsken::FunctionToaster,
+                ":}" | ":{" | "{:" | "}:" => Tostsken::Brace(val),
+                // "}" | "{" => Tostsken::Brace(val),
+                // " " | "," | ":" | "<" | ">" | "(" | ")" | "." | ";" | "\n" | "\t" => Tostsken::OperatorOrSthIdk(val),
                 x => Tostsken::Word(x.to_string()) 
             });
         }
@@ -34,7 +37,7 @@ pub mod lex {
             }
             // works but doesnt
             match ch {
-                ' ' | ',' | ':' | '<' | '>' | '(' | ')' | '.' | ';' | '\n' | '\t' => {
+                ' ' | ',' /*| ':'*/ | '<' | '>' | '(' | ')' | '.' | ';' | '\n' | '\t' => {
                     tokens.add(word);
                     word = String::from("");
                     // if ch != ' '{ // actually preserve all white space

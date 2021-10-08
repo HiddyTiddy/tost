@@ -10,6 +10,7 @@ pub mod parse {
         Word(String),
         WhiteSpace(String),
         FunctionToaster,
+        Brace(String),
         // Number(String),
         OperatorOrSthIdk(String),
     }
