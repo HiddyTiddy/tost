@@ -17,16 +17,9 @@ pub mod parse {
 
     pub mod parse_tree {
         #[derive(Debug)]
-        pub enum Typs <'a>{
-            ChildNode(&'a Node<'a>),
-            Atom(String)
-            
-        }
-        
-        #[derive(Debug)]
-        pub struct Node<'a> {
-            pub children: Vec<Typs<'a>>,
+        pub struct Node {
+            pub children: Vec<Node>,
+            pub content: Option<String>,
         }
     }
-
 }
