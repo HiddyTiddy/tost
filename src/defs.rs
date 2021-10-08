@@ -11,6 +11,7 @@ pub mod parse {
         WhiteSpace(String),
         FunctionToaster,
         Brace(String),
+        Semicolon,
         // Number(String),
         OperatorOrSthIdk(String),
     }

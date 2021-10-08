@@ -8,12 +8,18 @@ pub mod lex {
 
     impl Add for Vec<Tostsken> {
         fn add(&mut self, val: String) {
+            if val.is_empty(){
+                return;
+            }
             self.push(match val.as_str() {
                 "toaster" => Tostsken::FunctionToaster,
                 ":}" | ":{" | "{:" | "}:" => Tostsken::Brace(val),
                 // "}" | "{" => Tostsken::Brace(val),
                 // " " | "," | ":" | "<" | ">" | "(" | ")" | "." | ";" | "\n" | "\t" => Tostsken::OperatorOrSthIdk(val),
+                ";" => Tostsken::Semicolon,
+                " "|"\n" | "\t" => Tostsken::WhiteSpace(val),
                 x => Tostsken::Word(x.to_string()),
+                
             });
         }
     }
@@ -40,13 +46,10 @@ pub mod lex {
                     tokens.add(word);
                     word = String::from("");
                     // if ch != ' '{ // actually preserve all white space
-                    tokens.push(match ch {
-                        ' ' | '\n' | '\t' => Tostsken::WhiteSpace(String::from(ch).clone()),
-                        _ => Tostsken::OperatorOrSthIdk(String::from(ch).clone()),
-                    });
+                    tokens.add(ch.to_string());
                     // }
                     continue;
-                }
+                },
                 _ => {}
             }
             word.push(ch);
