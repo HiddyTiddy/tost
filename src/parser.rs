@@ -69,7 +69,9 @@ pub mod parse_tree {
                         // instead of `toaster main <args> {:`
                         // actually just parses the function body
                         // but we never actually wanted to call the functions, right?
-                        child_node.parse_funcs(find_function_body(child));
+                        let function = find_function_body(child);
+                        child_node.parse_funcs(function.1);
+                        child_node.content = Some(function.0);
                     } else {
                         child_node.parse_statements(child);
                     }
@@ -82,9 +84,8 @@ pub mod parse_tree {
         //   statements (x = 12, if asdas {: :}, function calls)
         //      statement
 
-
         fn parse_statements(&mut self, tokens: Vec<Tostsken>) {
-            println!("\nparse_statements: {:?}", tokens);
+            //println!("\nparse_statements: {:?}", tokens);
 
             let mut all: Vec<StatementType> = vec![];
             let mut current: Vec<Tostsken> = vec![];
@@ -99,18 +100,18 @@ pub mod parse_tree {
                             depth = 1;
                         }
                         if brace == "}:" || brace == ":}" {
-                            depth-=1;
-                        } 
+                            depth -= 1;
+                        }
                         current.push(i);
                         if depth == 1 {
                             all.push(StatementType::Other(current));
                             current = vec![];
                         }
-                    },// yeah,
+                    } // yeah,
                     Tostsken::Semicolon => {
                         all.push(StatementType::Declaration(current));
                         current = vec![];
-                    },
+                    }
                     _ => {
                         current.push(i);
                     }
@@ -118,29 +119,66 @@ pub mod parse_tree {
             }
 
             for child in all {
-                let child_node = Node::new();
+                let mut child_node = Node::new();
                 match child {
                     StatementType::Declaration(decl) => {
-                        println!("declaration {:?}", decl);
-                    },
-                    StatementType::Other(_) => todo!(),
+                        //println!("declaration {:?}", decl);
+                        child_node.parse_declaration(decl);
+                    }
+                    _ => todo!(),
                 }
                 self.children.push(child_node);
             }
             // unimplemented!();
         }
+
+        fn parse_declaration(&mut self, tokens: Vec<Tostsken>) {
+            let mut lhs = Node::new();
+            let mut rhs: Vec<Tostsken> = vec![];
+            let mut rhs_time: u8 = 0;
+            for tok in tokens {
+                if let Tostsken::Word(ref val) = tok {
+                    if rhs_time == 2 {
+                        rhs.push(tok);
+                    } else {
+                        if rhs_time == 0 {
+                            lhs.content = Some(val.to_string());
+                        }
+                        rhs_time += 1;
+                    }
+                }
+            }
+
+            self.children.push(lhs);
+            self.content = Some("=".to_string());
+            let mut right_child = Node::new();
+
+            right_child.parse_arithmetic(rhs);
+
+            self.children.push(right_child);
+        }
+
+        fn parse_arithmetic(&mut self, tokens: Vec<Tostsken>) {
+            // TODO CHANGE THIS
+            // kinda hacky but i wanna get results
+            if let Some(Tostsken::Word(word)) = tokens
+                .iter()
+                .find(|elem| -> bool { !matches!(elem, Tostsken::WhiteSpace(_)) })
+            {
+                self.content = Some(word.to_string());
+            }
+        }
     }
-
-
 
     /*
      * function that carves the function body out of a vector of tokens
      * of form [FunctionToaster, ..., ":{" | "{:", ..., ":}"|"}:"]
      */
-    fn find_function_body(tokens: Vec<Tostsken>) -> Vec<Tostsken> {
+    fn find_function_body(tokens: Vec<Tostsken>) -> (String, Vec<Tostsken>) {
         let mut in_body = false;
         let mut out = vec![];
         let mut depth = 1; // this is my fav trick
+        let mut funcname: String = "".to_string();
 
         for token in tokens {
             if in_body {
@@ -155,16 +193,24 @@ pub mod parse_tree {
                     break;
                 }
                 out.push(token);
-            } else if let Tostsken::Brace(brace) = token {
-                if brace == "{:" || brace == ":{" {
-                    in_body = true;
-                } else {
-                    panic!("[ERROR] u fucked up. (wrong brace after function declaration)");
+            } else {
+                match token {
+                    Tostsken::Brace(brace) => {
+                        if brace == "{:" || brace == ":{" {
+                            in_body = true;
+                        } else {
+                            panic!("[ERROR] u fucked up. (wrong brace after function declaration)");
+                        }
+                    }
+                    Tostsken::Word(word) => {
+                        funcname = word;
+                    }
+                    _ => (),
                 }
             }
         }
 
-        out
+        (funcname, out)
     }
 
     fn actual_parser(tokens: Vec<Tostsken>) -> Node {
@@ -182,6 +228,7 @@ pub mod parse_tree {
         // ^smart idea
         let mut out = Node::new();
         out.parse_funcs(tokens);
+        out.content = Some("root".to_string());
         out
     }
 
