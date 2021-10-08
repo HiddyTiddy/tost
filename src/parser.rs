@@ -51,15 +51,17 @@ pub mod parse_tree {
 
             for child in all {
                 let mut child_node = Node::new();
-                // if let Tostsken::FunctionToaster = child[0] {
-                child_node.parse_statements(child);
+                if let Tostsken::FunctionToaster = child[0] {
+                    child_node.parse_funcs(child);
+                } else {
+                    child_node.parse_statements(child);
+                }
                 self.children.push(child_node);
-                // }
-                // else {
-                //     self.children.push(child_node);
-                // }
             }
         }
+
+        // function level
+        //   statements (x = 12, if asdas {: :}, function calls)
 
         fn parse_statements(&mut self, tokens: Vec<Tostsken>) {
             unimplemented!();
