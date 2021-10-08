@@ -29,6 +29,10 @@ pub mod parse_tree {
                             depth = 1; // we are now in the function
                             all.push(current);
                             current = vec![];
+                        } else {
+                            // we hit another function while being inside 
+                            // increase depth
+                            depth += 1;
                         }
                     }
                     Tostsken::Brace(ref op) => {
