@@ -2,11 +2,14 @@ pub mod parse {
 
     #[derive(Debug, Clone)]
     pub enum Tostsken {
+        // TODO: dont use String
+
         // Statement(String),
         // Expression(String),
         // Function(String),
         Word(String),
         WhiteSpace(String),
+        FunctionToaster,
         // Number(String),
         OperatorOrSthIdk(String),
     }
