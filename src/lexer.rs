@@ -1,6 +1,20 @@
 pub mod lex {
 
     use crate::defs::parse::Tostsken;
+    
+    trait Add {
+        fn add(&mut self, val: String);
+    }
+
+    impl Add for Vec<Tostsken> {
+        fn add(&mut self, val:String) {
+            self.push
+            (match val.as_str() {
+                "toaster" => Tostsken::FunctionToaster,
+                x => Tostsken::Word(x.to_string()) 
+            });
+        }
+    }
 
     pub fn lexer(code: String) -> Vec<Tostsken> {
         let mut tokens = vec![];
@@ -21,7 +35,7 @@ pub mod lex {
             // works but doesnt
             match ch {
                 ' ' | ',' | ':' | '<' | '>' | '(' | ')' | '.' | ';' | '\n' | '\t' => {
-                    tokens.push(Tostsken::Word(word.clone()));
+                    tokens.add(word);
                     word = String::from("");
                     // if ch != ' '{ // actually preserve all white space
                     tokens.push(match ch {
@@ -37,7 +51,7 @@ pub mod lex {
         }
         // still eats newline but eh
         if !word.is_empty() {
-            tokens.push(Tostsken::Word(word));
+            tokens.add(word);
         }
 
         tokens
