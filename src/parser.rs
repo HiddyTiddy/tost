@@ -17,9 +17,13 @@ pub mod parse_tree {
         }
 
         fn parse_funcs(&mut self, tokens: Vec<Tostsken>) {
+            println!("\n   parse_funcs {:?}", tokens);
+            // this function finds the bounds of functions on the Token ``Tostsken'' vector
+            //
+            // we expect to have multiple functions / non-function areas
             let mut all = vec![];
             let mut current = vec![];
-            let mut depth = -1;
+            let mut depth = -1; // counter to account for nested blocks
             for i in tokens {
                 match i {
                     Tostsken::FunctionToaster => {
@@ -30,7 +34,7 @@ pub mod parse_tree {
                             all.push(current);
                             current = vec![];
                         } else {
-                            // we hit another function while being inside 
+                            // we hit another function while being inside
                             // increase depth
                             depth += 1;
                         }
@@ -54,13 +58,16 @@ pub mod parse_tree {
             }
 
             for child in all {
-                let mut child_node = Node::new();
-                if let Tostsken::FunctionToaster = child[0] {
-                    child_node.parse_funcs(child);
-                } else {
-                    child_node.parse_statements(child);
+                if !child.is_empty() {
+                    let mut child_node = Node::new();
+                    if let Tostsken::FunctionToaster = child[0] {
+                        // TODO: only parse_funcs of function body oops
+                        child_node.parse_funcs(find_function_body(child));
+                    } else {
+                        child_node.parse_statements(child);
+                    }
+                    self.children.push(child_node);
                 }
-                self.children.push(child_node);
             }
         }
 
@@ -68,8 +75,43 @@ pub mod parse_tree {
         //   statements (x = 12, if asdas {: :}, function calls)
 
         fn parse_statements(&mut self, tokens: Vec<Tostsken>) {
-            unimplemented!();
+            println!("parse_statements: {:?}", tokens);
+            // unimplemented!();
         }
+    }
+
+    /*
+     * function that carves the function body out of a vector of tokens
+     * of form [FunctionToaster, ..., ":{" | "{:", ..., ":}"|"}:"]
+     */
+    fn find_function_body(tokens: Vec<Tostsken>) -> Vec<Tostsken> {
+        let mut in_body = false;
+        let mut out = vec![];
+        let mut depth = 1; // this is my fav trick
+
+        for token in tokens {
+            if in_body {
+                if let Tostsken::Brace(brace) = &token {
+                    match brace.as_str() {
+                        ":}" | "}:" => depth -= 1,
+                        "{:" | ":{" => depth+= 1,  
+                        _ => ()
+                    };
+                }
+                if depth == 0{
+                    break;
+                }
+                out.push(token);
+            }else if let Tostsken::Brace(brace) = token {
+                if brace == "{:" || brace == ":{" {
+                    in_body = true;
+                } else {
+                    panic!("[ERROR] u fucked up.");
+                }
+            }
+        }
+
+        out
     }
 
     fn actual_parser(tokens: Vec<Tostsken>) -> Node {
