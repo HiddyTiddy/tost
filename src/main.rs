@@ -1,15 +1,14 @@
-mod lexer;
 mod defs;
+mod lexer;
 mod parser;
-
 
 use std::fs::File;
 use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
 
-pub use lexer::lex;
 pub use defs::parse;
+pub use lexer::lex;
 pub use parser::parse_tree;
 // use regex::Regex;
 
@@ -28,8 +27,6 @@ fn read_file(fname: &str) -> Result<String, io::Error> {
 
     Ok(out)
 }
-
-
 
 fn main() {
     let source = match read_file("./foo.tst") {

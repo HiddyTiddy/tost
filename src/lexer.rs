@@ -1,20 +1,19 @@
 pub mod lex {
 
     use crate::defs::parse::Tostsken;
-    
+
     trait Add {
         fn add(&mut self, val: String);
     }
 
     impl Add for Vec<Tostsken> {
-        fn add(&mut self, val:String) {
-            self.push
-            (match val.as_str() {
+        fn add(&mut self, val: String) {
+            self.push(match val.as_str() {
                 "toaster" => Tostsken::FunctionToaster,
                 ":}" | ":{" | "{:" | "}:" => Tostsken::Brace(val),
                 // "}" | "{" => Tostsken::Brace(val),
                 // " " | "," | ":" | "<" | ">" | "(" | ")" | "." | ";" | "\n" | "\t" => Tostsken::OperatorOrSthIdk(val),
-                x => Tostsken::Word(x.to_string()) 
+                x => Tostsken::Word(x.to_string()),
             });
         }
     }
