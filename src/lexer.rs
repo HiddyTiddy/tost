@@ -8,7 +8,7 @@ pub mod lex {
 
     impl Add for Vec<Tostsken> {
         fn add(&mut self, val: String) {
-            if val.is_empty(){
+            if val.is_empty() {
                 return;
             }
             self.push(match val.as_str() {
@@ -17,9 +17,8 @@ pub mod lex {
                 // "}" | "{" => Tostsken::Brace(val),
                 // " " | "," | ":" | "<" | ">" | "(" | ")" | "." | ";" | "\n" | "\t" => Tostsken::OperatorOrSthIdk(val),
                 ";" => Tostsken::Semicolon,
-                " "|"\n" | "\t" => Tostsken::WhiteSpace(val),
+                " " | "\n" | "\t" => Tostsken::WhiteSpace(val),
                 x => Tostsken::Word(x.to_string()),
-                
             });
         }
     }

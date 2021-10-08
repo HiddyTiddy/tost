@@ -16,7 +16,6 @@ pub mod parse {
         OperatorOrSthIdk(String),
     }
 
-
     #[derive(Debug)]
     pub enum StatementType {
         Declaration(Vec<Tostsken>),
