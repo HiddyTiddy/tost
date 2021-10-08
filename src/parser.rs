@@ -1,6 +1,9 @@
 pub mod parse_tree {
+    use std::vec;
+
     use crate::defs::parse::parse_tree::*;
     use crate::defs::parse::Tostsken;
+    use crate::parse::StatementType;
 
     impl Default for Node {
         fn default() -> Self {
@@ -17,7 +20,7 @@ pub mod parse_tree {
         }
 
         fn parse_funcs(&mut self, tokens: Vec<Tostsken>) {
-            println!("\n   parse_funcs {:?}", tokens);
+            //println!("\n   parse_funcs {:?}", tokens);
             // this function finds the bounds of functions on the Token ``Tostsken'' vector
             //
             // we expect to have multiple functions / non-function areas
@@ -77,12 +80,58 @@ pub mod parse_tree {
 
         // function level
         //   statements (x = 12, if asdas {: :}, function calls)
+        //      statement
+
 
         fn parse_statements(&mut self, tokens: Vec<Tostsken>) {
-            println!("parse_statements: {:?}", tokens);
+            println!("\nparse_statements: {:?}", tokens);
+
+            let mut all: Vec<StatementType> = vec![];
+            let mut current: Vec<Tostsken> = vec![];
+            let mut depth = -1; // currently not in block
+
+            for i in tokens {
+                // add to current until End Of Statement is reached
+                match i {
+                    Tostsken::FunctionToaster => unreachable!(), // i think this is not reachable
+                    Tostsken::Brace(ref brace) => {
+                        if depth == -1 {
+                            depth = 1;
+                        }
+                        if brace == "}:" || brace == ":}" {
+                            depth-=1;
+                        } 
+                        current.push(i);
+                        if depth == 1 {
+                            all.push(StatementType::Other(current));
+                            current = vec![];
+                        }
+                    },// yeah,
+                    Tostsken::Semicolon => {
+                        all.push(StatementType::Declaration(current));
+                        current = vec![];
+                    },
+                    _ => {
+                        current.push(i);
+                    }
+                };
+            }
+
+            for child in all {
+                let child_node = Node::new();
+                match child {
+                    StatementType::Declaration(decl) => {
+                        println!("declaration {:?}", decl);
+                    },
+                    StatementType::Other(_) => todo!(),
+                }
+                self.children.push(child_node);
+            }
             // unimplemented!();
         }
     }
+
+
 
     /*
      * function that carves the function body out of a vector of tokens
@@ -110,7 +159,7 @@ pub mod parse_tree {
                 if brace == "{:" || brace == ":{" {
                     in_body = true;
                 } else {
-                    panic!("[ERROR] u fucked up.");
+                    panic!("[ERROR] u fucked up. (wrong brace after function declaration)");
                 }
             }
         }

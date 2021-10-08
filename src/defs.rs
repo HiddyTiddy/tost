@@ -16,6 +16,13 @@ pub mod parse {
         OperatorOrSthIdk(String),
     }
 
+
+    #[derive(Debug)]
+    pub enum StatementType {
+        Declaration(Vec<Tostsken>),
+        Other(Vec<Tostsken>),
+    }
+
     pub mod parse_tree {
         #[derive(Debug)]
         pub struct Node {
