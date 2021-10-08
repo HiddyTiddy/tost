@@ -25,9 +25,7 @@ pub mod parse_tree {
                         depth = 1; // we are now in the function
                         out.push(current);
                         current = vec![];
-                    } /*else {
-                          current.push(i);
-                      }*/
+                    }
                 }
                 Tostsken::Brace(ref op) => {
                     if depth > 0 && (op == ":}" || op == "}:") {
@@ -55,10 +53,21 @@ pub mod parse_tree {
         // TODO: find start & end of tokens
         // TODO: fix everythinf
 
+        ///////////////////////////////////////////////////////
+        //  IDEA: function for parsing specific features     //
+        //   seems smarter                                   //
+        //             a bit                                 //
+        //                                                   //
+        //                                                   //
+        ///////////////////////////////////////////////////////
+        
         let sliced = slice(tokens);
 
         for i in sliced.iter() {
-            println!("function: {:?}\n", i);
+            if !i.is_empty() {
+                if let Tostsken::FunctionToaster = i[0] { print!("\nfunction:  ") };
+                println!("{:?}\n", i);
+            }
         }
 
         unimplemented!();
@@ -81,7 +90,7 @@ pub mod parse_tree {
     pub fn parse<'a>(tokens: Vec<Tostsken>) -> Node<'a> {
         // let root = Node::new();
 
-        let root = actual_parser(tokens);
+        actual_parser(tokens)
         // match &tokens[0] {
         //     Tostsken::OperatorOrSthIdk(op) => {
         //         if op.as_str() == "=" {
@@ -94,6 +103,5 @@ pub mod parse_tree {
         //         );
         //     },
         // }
-        root
     }
 }
