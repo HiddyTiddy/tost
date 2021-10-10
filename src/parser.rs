@@ -24,24 +24,26 @@ pub mod parse_tree {
             // this function finds the bounds of functions on the Token ``Tostsken'' vector
             //
             // we expect to have multiple functions / non-function areas
-            let mut all = vec![];
-            let mut current = vec![];
-            let mut depth = -1; // counter to account for nested blocks
+            let mut all: Vec<Vec<Tostsken>> = vec![];
+            let mut current_block: Vec<Tostsken> = vec![]; // temporary variable to store the current block in
+            let mut depth: i32 = -1; // counter to account for nested blocks
             for i in tokens {
                 match i {
+                    // keyword 'toast'
                     Tostsken::FunctionToaster => {
                         if depth == -1
                         // completely outside of functions
                         {
                             depth = 1; // we are now in the function
-                            all.push(current);
-                            current = vec![];
+                            all.push(current_block);
+                            current_block = vec![];
                         } else {
                             // we hit another function while being inside
                             // increase depth
                             depth += 1;
                         }
                     }
+                    // symbol :{, }:, {:, or :}
                     Tostsken::Brace(ref op) => {
                         if depth > 0 && (op == ":}" || op == "}:") {
                             depth -= 1;
@@ -49,15 +51,26 @@ pub mod parse_tree {
                     }
                     _ => (),
                 };
-                current.push(i);
+                // add the token to the current block
+                current_block.push(i);
                 if depth == 0 {
-                    all.push(current);
+                    all.push(current_block);
                     depth = -1;
-                    current = vec![];
+                    current_block = vec![];
                 }
             }
-            if !current.is_empty() {
-                all.push(current);
+
+            // after the loop, there might still be values in the block such as in
+            /*tost
+                toaster main {
+                    x = 10;
+                }
+
+                y = 10;
+            */
+            // therefore, push it to all blocks to not discard it
+            if !current_block.is_empty() {
+                all.push(current_block);
             }
 
             for child in all {
@@ -70,8 +83,8 @@ pub mod parse_tree {
                         // actually just parses the function body
                         // but we never actually wanted to call the functions, right?
                         let function = find_function_body(child);
-                        child_node.parse_funcs(function.1);
-                        child_node.content = Some(function.0);
+                        child_node.parse_funcs(function.1); // function body
+                        child_node.content = Some(function.0); // name of function
                     } else {
                         child_node.parse_statements(child);
                     }
@@ -83,7 +96,6 @@ pub mod parse_tree {
         // function level
         //   statements (x = 12, if asdas {: :}, function calls)
         //      statement
-
         fn parse_statements(&mut self, tokens: Vec<Tostsken>) {
             //println!("\nparse_statements: {:?}", tokens);
 
@@ -226,10 +238,11 @@ pub mod parse_tree {
         //                                                   //
         ///////////////////////////////////////////////////////
         // ^smart idea
-        let mut out = Node::new();
-        out.parse_funcs(tokens);
-        out.content = Some("root".to_string());
-        out
+        let mut root = Node::new(); // this is the root of the tree
+        root.parse_funcs(tokens); // parse the tokens on function level
+                                  // and have them be children of root
+        root.content = Some("root".to_string());
+        root
     }
 
     pub fn parse(tokens: Vec<Tostsken>) -> Node {
