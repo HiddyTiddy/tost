@@ -1,21 +1,25 @@
+"""
+formatter yeah ill riir
+"""
+
 text = input()
 
-indent = 0
-skip_sp = False
+INDENT = 0
+SKIP = False
 for i in text:
-    if skip_sp :
-        skip_sp = False
+    if SKIP :
+        SKIP = False
         continue
     print(i, end="")
     if i == "[":
-        indent += 4
+        INDENT += 4
         print()
-        print(" "*indent, end="")
+        print(" "*INDENT, end="")
     if i == "]":
-        indent -= 4
+        INDENT -= 4
     if i == ",":
         print()
-        print(" "*indent, end="")
-        skip_sp = True
-        
+        print(" "*INDENT, end="")
+        SKIP = True
+
 print()
