@@ -12,6 +12,8 @@ pub mod parse {
         FunctionToaster,
         Brace(String),
         Semicolon,
+        Integer(i64),
+        Float(f64),
         // Number(String),
         OperatorOrSthIdk(String),
     }

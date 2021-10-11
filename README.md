@@ -18,8 +18,8 @@ started
 TODO: 
 - better conversion from pure text to tokens
     - -> numbers 
-      - int (123, 0x1a4, 0b1010011010, 0o077) => actually just store as int and not as string
-      - floats (0.123, 1.2e-1, 0., .0) => store as f64
+      - [✅] int (123, 0x1a4, 0b1010011010, 0o077) => actually just store as int and not as string
+      - [✅] floats (0.123, 1.2e-1, 0., .0) => store as f64
       - that's it!
     - -> string literals
       - "string important spaces and also important \"escaped\" quotes"
