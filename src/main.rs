@@ -10,7 +10,7 @@ use std::io::BufReader;
 pub use defs::parse;
 pub use lexer::lex;
 pub use parser::parse_tree;
-// use regex::Regex;
+
 
 // no idea
 fn read_file(fname: &str) -> Result<String, io::Error> {
@@ -38,7 +38,7 @@ fn main() {
     };
     // println!("{}", source);
     let lex = lex::lexer(source);
-    // println!("{:?}\n\n", lex);
+    println!("{:?}\n\n", lex);
     let parsed = parse_tree::parse(lex);
     println!("{:?}", parsed);
     //println!("[\x1b[0;34mtost\x1b[0m]");
