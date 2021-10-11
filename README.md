@@ -22,7 +22,7 @@ TODO:
       - [✅] floats (0.123, 1.2e-1, 0., .0) => store as f64
       - that's it!
     - -> string literals
-      - "string important spaces and also important \"escaped\" quotes"
+      - "string important spaces and also important \\"escaped\\" quotes"
     - -> чaracters
       - 'ч'
     - -> booleans
