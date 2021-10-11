@@ -24,7 +24,7 @@ pub mod lex {
     }
 
     pub fn lexer(code: String) -> Vec<Tostsken> {
-        let mut tokens = vec![];
+        let mut tokens: Vec<Tostsken> = vec![];
         let mut word = String::from("");
         let mut commenting = false;
         // let number_regex = Regex::new(r"^(\+|-)?\d+$");
