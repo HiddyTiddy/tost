@@ -48,6 +48,9 @@ pub mod parse_tree {
                         if depth > 0 && (op == ":}" || op == "}:") {
                             depth -= 1;
                         }
+                        // else if op == "{:" || op == ":{" {
+                        //     depth += 1;
+                        // }
                     }
                     _ => (),
                 };
@@ -130,7 +133,9 @@ pub mod parse_tree {
                 };
             }
 
+            
             for child in all {
+                
                 let mut child_node = Node::new();
                 match child {
                     StatementType::Declaration(decl) => {
@@ -172,7 +177,7 @@ pub mod parse_tree {
 
         fn parse_arithmetic(&mut self, tokens: Vec<Tostsken>) {
             // TODO CHANGE THIS
-            // kinda hacky but i wanna get results
+            // kinda hacky and shitty but i wanna get results
             if let Some(Tostsken::Word(word)) = tokens
                 .iter()
                 .find(|elem| -> bool { !matches!(elem, Tostsken::WhiteSpace(_)) })
