@@ -3,6 +3,7 @@ pub mod parse_tree {
 
     use crate::defs::parse::parse_tree::*;
     use crate::defs::parse::Tostsken;
+    use crate::parse::Operators;
     use crate::parse::StatementType;
 
     impl Default for Node {
@@ -133,9 +134,7 @@ pub mod parse_tree {
                 };
             }
 
-            
             for child in all {
-                
                 let mut child_node = Node::new();
                 match child {
                     StatementType::Declaration(decl) => {
@@ -152,17 +151,16 @@ pub mod parse_tree {
         fn parse_declaration(&mut self, tokens: Vec<Tostsken>) {
             let mut lhs = Node::new();
             let mut rhs: Vec<Tostsken> = vec![];
-            let mut rhs_time: u8 = 0;
+            let mut rhs_time: bool = false;
             for tok in tokens {
                 if let Tostsken::Word(ref val) = tok {
-                    if rhs_time == 2 {
-                        rhs.push(tok);
+                    if rhs_time {
+                        rhs.push(tok)
                     } else {
-                        if rhs_time == 0 {
-                            lhs.content = Some(val.to_string());
-                        }
-                        rhs_time += 1;
+                        lhs.content = Some(val.to_string());
                     }
+                } else if let Tostsken::Equals = tok {
+                    rhs_time = true;
                 }
             }
 
@@ -178,12 +176,59 @@ pub mod parse_tree {
         fn parse_arithmetic(&mut self, tokens: Vec<Tostsken>) {
             // TODO CHANGE THIS
             // kinda hacky and shitty but i wanna get results
-            if let Some(Tostsken::Word(word)) = tokens
-                .iter()
-                .find(|elem| -> bool { !matches!(elem, Tostsken::WhiteSpace(_)) })
-            {
-                self.content = Some(word.to_string());
+            let mut left: Vec<Tostsken> = vec![];
+            // this is horrible
+            let mut right: Vec<Tostsken> = vec![];
+            let mut rhs = false;
+            let mut operation: String;
+            let mut depth = 0;
+            for tok in tokens {
+                if let Tostsken::WhiteSpace(_) = tok {
+                    continue;
+                }
+
+                if rhs {
+                    right.push(tok);
+                } else {
+                    if let Tostsken::OpenParenthesis = tok {
+                        depth += 1;
+                    }
+                    if let Tostsken::CloseParenthesis = tok {
+                        depth -= 1;
+                    }
+
+                    // TODO: add tokens for plus minus etc
+                    if depth == 0 {
+                        if let Tostsken::OperatorOrSthIdk(ref op) = tok {
+                            match op.as_str() {
+                                "+" | "-" | "*" | "/" => {
+                                    operation = op.to_string();
+                                }
+                                _ => (),
+                            }
+                        }
+                    }
+                    left.push(tok);
+                }
             }
+            // if let Some(Tostsken::Word(word)) = tokens
+            //     .iter()
+            //     .find(|elem| -> bool { !matches!(elem, Tostsken::WhiteSpace(_)) })
+            // {
+            //     self.content = Some(word.to_string());
+            // }
+
+            self.content = Some(operation);
+
+            let left_child = Node::new();
+        
+            if left.len() != 1 {
+                left_child.parse_arithmetic(left)
+            }
+
+            let right_child = Node::new();
+
+            self.children = vec![left_child, right_child];
         }
     }
 
