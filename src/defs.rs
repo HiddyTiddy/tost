@@ -11,12 +11,26 @@ pub mod parse {
         WhiteSpace(String),
         FunctionToaster,
         Brace(String),
+        OpenParenthesis,
+        CloseParenthesis,
         Semicolon,
+        Equals,
         Integer(i64),
         Float(f64),
         // Number(String),
         OperatorOrSthIdk(String),
     }
+
+    // pub enum Operators {
+    //     // +
+    //     Addition,
+    //     // -
+    //     Subtraction,
+    //     // *
+    //     Multiplication,
+    //     // /
+    //     Division,
+    // }
 
     #[derive(Debug)]
     pub enum StatementType {
@@ -29,6 +43,7 @@ pub mod parse {
         pub struct Node {
             pub children: Vec<Node>,
             pub content: Option<String>,
+            // pub id: String,
         }
     }
 }
