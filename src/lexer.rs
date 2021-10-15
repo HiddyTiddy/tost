@@ -10,8 +10,8 @@ pub mod lex {
 
     impl Add for Vec<Tostsken> {
         fn add(&mut self, val: String) {
-            let int_regex = Regex::new(r"^(\+|-)?[1-9]([0-9])*$").unwrap();
-            let float_regex = Regex::new(r"^(\+|-)?[1-9]([0-9])*\.(\d*)$").unwrap();
+            let int_regex = Regex::new(r"^(\+|-)?([1-9]([0-9])*|0)$").unwrap();
+            let float_regex = Regex::new(r"^(\+|-)?([1-9]([0-9])*|0)\.(\d*)$").unwrap();
             if val.is_empty() {
                 return;
             }
