@@ -3,3 +3,7 @@
 foo.tst
 /.vscode
 /.vscode/*
+
+*.dot
+*.png
+*.svg
