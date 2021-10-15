@@ -4,7 +4,7 @@ mod parser;
 
 use defs::parse::parse_tree::Node;
 use std::fs::File;
-use std::io::{self, BufRead, BufReader};
+use std::io::{self, BufRead, BufReader, Write};
 
 pub use defs::parse;
 pub use lexer::lex;
@@ -26,16 +26,15 @@ fn read_file(fname: &str) -> Result<String, io::Error> {
     Ok(out)
 }
 
-fn to_dot(ptree: Node, parent: &String, idx: &mut i32) -> String {
+fn to_dot(ptree: Node, parent: &str, idx: &mut i32) -> String {
     let mut id: String = format!("Node_{}", idx);
-    if let Some(mut name) = ptree.content {
-        if name == "=" {
-            name = "equals".to_string();
-        }
+    let mut disp_name = "Node".to_string();
+    if let Some(name) = ptree.content {
         id = format!("{}_{}", name, idx);
+        disp_name = name;
     }
 
-    let mut out = format!("\"{}\" -- \"{}\";\n", parent, id);
+    let mut out = format!("\"{}\" [label=\"{}\"]\n\"{}\" -- \"{}\";\n", id, disp_name, parent, id);
 
     for child in ptree.children {
         *idx += 1;
@@ -44,6 +43,12 @@ fn to_dot(ptree: Node, parent: &String, idx: &mut i32) -> String {
     }
 
     out
+}
+
+fn save_dot(filename :&str, dot_code: &str) {
+    let mut file= File::create(filename).unwrap();
+
+    write!(&mut file, "graph tost {{ \n{} }}", dot_code).unwrap();
 }
 
 fn main() {
@@ -60,9 +65,7 @@ fn main() {
     let parsed = parse_tree::parse(lex);
     // println!("{:?}", parsed);
     let mut i = 0;
-    println!(
-        "graph tost {{ \n{} }}",
-        to_dot(parsed, &"root".to_string(), &mut i)
-    );
+    // parse_root node on top bc im too lazy to have a wrapper recursion function lol
+    save_dot("graph.dot", &to_dot(parsed, &"parse_root".to_string(), &mut i))
     //println!("[\x1b[0;34mtost\x1b[0m]");
 }
