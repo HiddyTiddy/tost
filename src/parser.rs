@@ -3,7 +3,6 @@ pub mod parse_tree {
 
     use crate::defs::parse::parse_tree::*;
     use crate::defs::parse::Tostsken;
-    use crate::parse::Operators;
     use crate::parse::StatementType;
 
     impl Default for Node {
@@ -91,6 +90,7 @@ pub mod parse_tree {
                         child_node.content = Some(function.0); // name of function
                     } else {
                         child_node.parse_statements(child);
+                        child_node.content = Some("statement-list".to_string());
                     }
                     self.children.push(child_node);
                 }
@@ -153,14 +153,24 @@ pub mod parse_tree {
             let mut rhs: Vec<Tostsken> = vec![];
             let mut rhs_time: bool = false;
             for tok in tokens {
-                if let Tostsken::Word(ref val) = tok {
-                    if rhs_time {
-                        rhs.push(tok)
-                    } else {
-                        lhs.content = Some(val.to_string());
+                // wtf
+                if rhs_time {
+                    match tok {
+                        Tostsken::Word(_) | Tostsken::Integer(_) | Tostsken::Float(_) => {
+                            rhs.push(tok);
+                        }
+                        _ => {}
                     }
-                } else if let Tostsken::Equals = tok {
-                    rhs_time = true;
+                } else {
+                    match tok {
+                        Tostsken::Word(x) => {
+                            lhs.content = Some(x);
+                        }
+                        Tostsken::Equals => {
+                            rhs_time = true;
+                        }
+                        _ => {}
+                    }
                 }
             }
 
@@ -174,41 +184,53 @@ pub mod parse_tree {
         }
 
         fn parse_arithmetic(&mut self, tokens: Vec<Tostsken>) {
+            if tokens.len() == 1{ // a bit neater graph
+                match &tokens[0] {
+                    Tostsken::Integer(integer) => self.content = Some(format!("{}",integer)),
+                    Tostsken::Float(floateger) => self.content = Some(format!("{}",floateger)),
+                    token => {
+                        unimplemented!("parse_arithmetic type {:?} not yet implemented", token);
+                    },
+                }
+                return;
+            }
             // TODO CHANGE THIS
             // kinda hacky and shitty but i wanna get results
             let mut left: Vec<Tostsken> = vec![];
             // this is horrible
             let mut right: Vec<Tostsken> = vec![];
             let mut rhs = false;
-            let mut operation: String;
+            let mut operation: String = "unreachable".to_string();
             let mut depth = 0;
-            for tok in tokens {
-                if let Tostsken::WhiteSpace(_) = tok {
-                    continue;
-                }
+            for tok in &tokens {
+                // if let Tostsken::WhiteSpace(_) = tok {
+                //     continue;
+                // }
 
                 if rhs {
-                    right.push(tok);
+                    right.push(tok.to_owned());
                 } else {
                     if let Tostsken::OpenParenthesis = tok {
                         depth += 1;
                     }
-                    if let Tostsken::CloseParenthesis = tok {
+                    else if let Tostsken::CloseParenthesis = tok {
                         depth -= 1;
                     }
 
                     // TODO: add tokens for plus minus etc
                     if depth == 0 {
-                        if let Tostsken::OperatorOrSthIdk(ref op) = tok {
+                        if let Tostsken::Word(ref op) = tok {
                             match op.as_str() {
                                 "+" | "-" | "*" | "/" => {
                                     operation = op.to_string();
+                                    rhs = true;
+                                    continue;
                                 }
                                 _ => (),
                             }
                         }
                     }
-                    left.push(tok);
+                    left.push(tok.to_owned());
                 }
             }
             // if let Some(Tostsken::Word(word)) = tokens
@@ -218,17 +240,42 @@ pub mod parse_tree {
             //     self.content = Some(word.to_string());
             // }
 
-            self.content = Some(operation);
-
-            let left_child = Node::new();
-        
-            if left.len() != 1 {
-                left_child.parse_arithmetic(left)
+            println!("{:?} -> {:?} {:?} {:?} ", tokens, left, operation, right);
+            if left.is_empty() {
+                unreachable!();
             }
 
-            let right_child = Node::new();
+            
+            let mut left_child = Node::new();
+            if left.len() == 1 {
+                if let Tostsken::Float(f) = left[0] {
+                    left_child.content = Some(format!("{}",f));
+                }
+                else if let Tostsken::Integer(i) = left[0] {
+                    left_child.content = Some(format!("{}",i));
+                }
+                else if let Tostsken::Word(w) = &left[0] {
+                    left_child.content = Some(w.to_string());
+                }
+            }
 
-            self.children = vec![left_child, right_child];
+            // println!("{:?}",left_child);
+            
+            // if left.len() != 1 {
+            //     left_child.parse_arithmetic(tokens[1..(tokens.len() - 1)].to_vec());
+            // }
+            // left_child.parse_arithmetic(left);
+            if !right.is_empty() {
+                self.content = Some(operation);
+    
+                let mut right_child = Node::new();
+                    right_child.parse_arithmetic(right);
+                self.children = vec![left_child, right_child];
+            } else {
+                self.children = vec![left_child];
+            }
+
+
         }
     }
 
