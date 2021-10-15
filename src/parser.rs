@@ -233,12 +233,6 @@ pub mod parse_tree {
                     left.push(tok.to_owned());
                 }
             }
-            // if let Some(Tostsken::Word(word)) = tokens
-            //     .iter()
-            //     .find(|elem| -> bool { !matches!(elem, Tostsken::WhiteSpace(_)) })
-            // {
-            //     self.content = Some(word.to_string());
-            // }
 
             println!("{:?} -> {:?} {:?} {:?} ", tokens, left, operation, right);
             if left.is_empty() {
