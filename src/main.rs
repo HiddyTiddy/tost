@@ -26,7 +26,7 @@ fn read_file(fname: &str) -> Result<String, io::Error> {
     Ok(out)
 }
 
-fn to_dot(ptree: Node, parent: &str, idx: &mut i32) -> String {
+fn _to_dot(ptree: Node, parent: &str, idx: &mut i32) -> String {
     let mut id: String = format!("Node_{}", idx);
     let mut disp_name = "Node".to_string();
     if let Some(name) = ptree.content {
@@ -38,10 +38,19 @@ fn to_dot(ptree: Node, parent: &str, idx: &mut i32) -> String {
 
     for child in ptree.children {
         *idx += 1;
-        let tmp = &to_dot(child, &id, idx);
+        let tmp = &_to_dot(child, &id, idx);
         out += tmp;
     }
 
+    out
+}
+
+fn to_dot(ptree: Node) -> String {
+    let mut idx = 0;
+    let mut out = "\"root\" [label=\"root\"]\n\n".to_string();
+    for ch in ptree.children {
+        out += &_to_dot(ch, "root", &mut idx);
+    }
     out
 }
 
@@ -64,8 +73,7 @@ fn main() {
     // println!("{:?}\n\n", lex);
     let parsed = parse_tree::parse(lex);
     // println!("{:?}", parsed);
-    let mut i = 0;
     // parse_root node on top bc im too lazy to have a wrapper recursion function lol
-    save_dot("graph.dot", &to_dot(parsed, &"parse_root".to_string(), &mut i))
+    save_dot("graph.dot", &to_dot(parsed))
     //println!("[\x1b[0;34mtost\x1b[0m]");
 }
