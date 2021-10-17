@@ -1,5 +1,4 @@
 pub mod parse_tree {
-    use std::vec;
 
     use crate::defs::parse::parse_tree::*;
     use crate::defs::parse::Tostsken;
@@ -183,94 +182,138 @@ pub mod parse_tree {
             self.children.push(right_child);
         }
 
+        fn _parse_arithmetic(&mut self, expr: &OpWrapper){
+            match expr {
+                OpWrapper::Atom(atom) => {
+                    let mut child = Node::new();
+                    match atom {
+                        Tostsken::Word(w) => child.content = Some(w.to_string()),
+                        Tostsken::Integer(i) => child.content = Some(format!("{}",i)),
+                        Tostsken::Float(f) => child.content = Some(format!("{}",f)),
+                        Tostsken::OperatorOrSthIdk(_) => unreachable!(),
+                        _ => ()
+                    }
+
+                    self.children = vec![child];
+                }
+                OpWrapper::Expr(operation) => {
+                    let mut rhs = Node::new();
+                    let mut lhs = Node::new();
+                    rhs._parse_arithmetic(&operation.rhs);
+                    lhs._parse_arithmetic(&operation.lhs);
+                    self.children = vec![lhs, rhs];
+                    self.content = Some(match &operation.operator {
+                        Tostsken::OperatorOrSthIdk(op) => op.to_owned(),
+                        Tostsken::Word(op) => op.to_owned(),
+                        _ => unreachable!()
+                    })
+                }
+            }
+
+        }
+
         fn parse_arithmetic(&mut self, tokens: Vec<Tostsken>) {
-            if tokens.len() == 1{ // a bit neater graph
+            if tokens.len() == 1 {
+                // a bit neater graph
                 match &tokens[0] {
-                    Tostsken::Integer(integer) => self.content = Some(format!("{}",integer)),
-                    Tostsken::Float(floateger) => self.content = Some(format!("{}",floateger)),
+                    Tostsken::Integer(integer) => self.content = Some(format!("{}", integer)),
+                    Tostsken::Float(floateger) => self.content = Some(format!("{}", floateger)),
                     token => {
                         unimplemented!("parse_arithmetic type {:?} not yet implemented", token);
-                    },
+                    }
                 }
                 return;
             }
-            // TODO CHANGE THIS
+            // TODO CHANGE THIS.
             // kinda hacky and shitty but i wanna get results
-            let mut left: Vec<Tostsken> = vec![];
-            // this is horrible
-            let mut right: Vec<Tostsken> = vec![];
-            let mut rhs = false;
-            let mut operation: String = "unreachable".to_string();
-            let mut depth = 0;
+
+            let mut value_stack = vec![];
+            let mut operator_stack: Vec<Tostsken> = vec![];
             for tok in &tokens {
-                // if let Tostsken::WhiteSpace(_) = tok {
-                //     continue;
-                // }
-
-                if rhs {
-                    right.push(tok.to_owned());
-                } else {
-                    if let Tostsken::OpenParenthesis = tok {
-                        depth += 1;
+                match tok {
+                    Tostsken::Float(_) | Tostsken::Integer(_) => {
+                        value_stack.push(OpWrapper::Atom(tok.to_owned()));
                     }
-                    else if let Tostsken::CloseParenthesis = tok {
-                        depth -= 1;
+                    Tostsken::OpenParenthesis => {
+                        operator_stack.push(tok.to_owned());
                     }
-
-                    // TODO: add tokens for plus minus etc
-                    if depth == 0 {
-                        if let Tostsken::Word(ref op) = tok {
-                            match op.as_str() {
-                                "+" | "-" | "*" | "/" => {
-                                    operation = op.to_string();
-                                    rhs = true;
-                                    continue;
-                                }
-                                _ => (),
+                    Tostsken::CloseParenthesis => {
+                        while !matches!(operator_stack.last(), Some(Tostsken::CloseParenthesis)) {
+                            let op = operator_stack.pop().unwrap();
+                            let a = value_stack.pop().unwrap();
+                            let b = value_stack.pop().unwrap();
+                            value_stack.push(OpWrapper::Expr(Op {
+                                lhs: Box::new(a),
+                                rhs: Box::new(b),
+                                operator: op,
+                            }));
+                        }
+                        operator_stack.pop();
+                    }
+                    Tostsken::Word(ref w) => {
+                        if let "+" | "-" | "*" | "/" = w.as_str() {
+                            while !operator_stack.is_empty()
+                                && !lower_precedence(w, operator_stack.last().unwrap().to_owned())
+                            //matches!(operator_stack.last().unwrap(), Tostsken::Word(_))
+                            {
+                                let op = operator_stack.pop().unwrap();
+                                let a = value_stack.pop().unwrap();
+                                let b = value_stack.pop().unwrap();
+                                value_stack.push(OpWrapper::Expr(Op {
+                                    lhs: Box::new(a),
+                                    rhs: Box::new(b),
+                                    operator: op,
+                                }));
                             }
+                            operator_stack.push(tok.to_owned());
                         }
                     }
-                    left.push(tok.to_owned());
+                    _ => (),
                 }
             }
 
-            println!("{:?} -> {:?} {:?} {:?} ", tokens, left, operation, right);
-            if left.is_empty() {
-                unreachable!();
+            while !operator_stack.is_empty() {
+                let op = operator_stack.pop().unwrap();
+                let a = value_stack.pop().unwrap();
+                let b = value_stack.pop().unwrap();
+                value_stack.push(OpWrapper::Expr(Op {
+                    lhs: Box::new(a),
+                    rhs: Box::new(b),
+                    operator: op,
+                }));
             }
-
-            
-            let mut left_child = Node::new();
-            if left.len() == 1 {
-                if let Tostsken::Float(f) = left[0] {
-                    left_child.content = Some(format!("{}",f));
-                }
-                else if let Tostsken::Integer(i) = left[0] {
-                    left_child.content = Some(format!("{}",i));
-                }
-                else if let Tostsken::Word(w) = &left[0] {
-                    left_child.content = Some(w.to_string());
-                }
-            }
-
-            // println!("{:?}",left_child);
-            
-            // if left.len() != 1 {
-            //     left_child.parse_arithmetic(tokens[1..(tokens.len() - 1)].to_vec());
-            // }
-            // left_child.parse_arithmetic(left);
-            if !right.is_empty() {
-                self.content = Some(operation);
-    
-                let mut right_child = Node::new();
-                    right_child.parse_arithmetic(right);
-                self.children = vec![left_child, right_child];
-            } else {
-                self.children = vec![left_child];
-            }
-
-
+            println!("{:?}", value_stack);
+            let mut child = Node::new();
+            child._parse_arithmetic(value_stack.first().unwrap());
+            self.children = vec![child];
         }
+    }
+
+    fn lower_precedence(a: &str, b: Tostsken) -> bool {
+        if let Tostsken::OpenParenthesis = b {
+            return false;
+        }
+        if let "+" | "-" = a {
+            return true;
+        }
+        if let Tostsken::Word(bop) = b {
+            if matches!(bop.as_str(), "+" | "-") {
+                return false;
+            }
+        }
+        true
+    }
+
+    #[derive(Debug)]
+    enum OpWrapper {
+        Atom(Tostsken),
+        Expr(Op),
+    }
+    #[derive(Debug)]
+    struct Op {
+        rhs: Box<OpWrapper>,
+        lhs: Box<OpWrapper>,
+        operator: Tostsken,
     }
 
     /*
