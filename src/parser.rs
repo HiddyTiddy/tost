@@ -154,12 +154,11 @@ pub mod parse_tree {
             for tok in tokens {
                 // wtf
                 if rhs_time {
-                    match tok {
-                        Tostsken::Word(_) | Tostsken::Integer(_) | Tostsken::Float(_) => {
-                            rhs.push(tok);
-                        }
-                        _ => {}
+                    if let Tostsken::WhiteSpace(_) = tok {
+                        continue;
                     }
+                    // oops
+                    rhs.push(tok);
                 } else {
                     match tok {
                         Tostsken::Word(x) => {
@@ -223,10 +222,8 @@ pub mod parse_tree {
                 }
                 return;
             }
-            // TODO CHANGE THIS.
-            // kinda hacky and shitty but i wanna get results
 
-            let mut value_stack = vec![];
+            let mut value_stack: Vec<OpWrapper> = vec![];
             let mut operator_stack: Vec<Tostsken> = vec![];
             for tok in &tokens {
                 match tok {
@@ -237,10 +234,10 @@ pub mod parse_tree {
                         operator_stack.push(tok.to_owned());
                     }
                     Tostsken::CloseParenthesis => {
-                        while !matches!(operator_stack.last(), Some(Tostsken::CloseParenthesis)) {
-                            let op = operator_stack.pop().unwrap();
-                            let a = value_stack.pop().unwrap();
-                            let b = value_stack.pop().unwrap();
+                        while !matches!(operator_stack.last(), Some(Tostsken::OpenParenthesis)) {
+                            let op: Tostsken = operator_stack.pop().unwrap();
+                            let a: OpWrapper = value_stack.pop().unwrap();
+                            let b: OpWrapper = value_stack.pop().unwrap();
                             value_stack.push(OpWrapper::Expr(Op {
                                 lhs: Box::new(a),
                                 rhs: Box::new(b),
@@ -255,9 +252,9 @@ pub mod parse_tree {
                                 && !lower_precedence(w, operator_stack.last().unwrap().to_owned())
                             //matches!(operator_stack.last().unwrap(), Tostsken::Word(_))
                             {
-                                let op = operator_stack.pop().unwrap();
-                                let a = value_stack.pop().unwrap();
-                                let b = value_stack.pop().unwrap();
+                                let op: Tostsken = operator_stack.pop().unwrap();
+                                let a: OpWrapper = value_stack.pop().unwrap();
+                                let b: OpWrapper = value_stack.pop().unwrap();
                                 value_stack.push(OpWrapper::Expr(Op {
                                     lhs: Box::new(a),
                                     rhs: Box::new(b),
@@ -272,24 +269,27 @@ pub mod parse_tree {
             }
 
             while !operator_stack.is_empty() {
-                let op = operator_stack.pop().unwrap();
-                let a = value_stack.pop().unwrap();
-                let b = value_stack.pop().unwrap();
+                let op: Tostsken = operator_stack.pop().unwrap();
+                let a: OpWrapper = value_stack.pop().unwrap();
+                let b: OpWrapper = value_stack.pop().unwrap();
                 value_stack.push(OpWrapper::Expr(Op {
                     lhs: Box::new(a),
                     rhs: Box::new(b),
                     operator: op,
                 }));
             }
-            let mut child = Node::new();
-            child._parse_arithmetic(value_stack.first().unwrap());
-            self.children = vec![child];
+            // let mut child = Node::new();
+            self._parse_arithmetic(value_stack.first().unwrap());
+            // self.children .push(child);
         }
     }
 
+    /*
+     * helper function to parse arithmetic
+     */
     fn lower_precedence(a: &str, b: Tostsken) -> bool {
         // returns true if b has lower precedence than a
-        if let Tostsken::OpenParenthesis = b {
+        if let Tostsken::OpenParenthesis | Tostsken::CloseParenthesis = b {
             return true;
         }
         if let "+" | "-" = a {
