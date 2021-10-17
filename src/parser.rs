@@ -182,19 +182,19 @@ pub mod parse_tree {
             self.children.push(right_child);
         }
 
-        fn _parse_arithmetic(&mut self, expr: &OpWrapper){
+        fn _parse_arithmetic(&mut self, expr: &OpWrapper) {
             match expr {
                 OpWrapper::Atom(atom) => {
-                    let mut child = Node::new();
+                    // let mut child = Node::new();
                     match atom {
-                        Tostsken::Word(w) => child.content = Some(w.to_string()),
-                        Tostsken::Integer(i) => child.content = Some(format!("{}",i)),
-                        Tostsken::Float(f) => child.content = Some(format!("{}",f)),
+                        Tostsken::Word(w) => self.content = Some(w.to_string()),
+                        Tostsken::Integer(i) => self.content = Some(format!("{}", i)),
+                        Tostsken::Float(f) => self.content = Some(format!("{}", f)),
                         Tostsken::OperatorOrSthIdk(_) => unreachable!(),
-                        _ => ()
+                        _ => (),
                     }
 
-                    self.children = vec![child];
+                    // self.children = vec![child];
                 }
                 OpWrapper::Expr(operation) => {
                     let mut rhs = Node::new();
@@ -205,11 +205,10 @@ pub mod parse_tree {
                     self.content = Some(match &operation.operator {
                         Tostsken::OperatorOrSthIdk(op) => op.to_owned(),
                         Tostsken::Word(op) => op.to_owned(),
-                        _ => unreachable!()
+                        _ => unreachable!(),
                     })
                 }
             }
-
         }
 
         fn parse_arithmetic(&mut self, tokens: Vec<Tostsken>) {
@@ -282,7 +281,6 @@ pub mod parse_tree {
                     operator: op,
                 }));
             }
-            println!("{:?}", value_stack);
             let mut child = Node::new();
             child._parse_arithmetic(value_stack.first().unwrap());
             self.children = vec![child];
@@ -290,18 +288,17 @@ pub mod parse_tree {
     }
 
     fn lower_precedence(a: &str, b: Tostsken) -> bool {
+        // returns true if b has lower precedence than a
         if let Tostsken::OpenParenthesis = b {
-            return false;
-        }
-        if let "+" | "-" = a {
             return true;
         }
-        if let Tostsken::Word(bop) = b {
-            if matches!(bop.as_str(), "+" | "-") {
-                return false;
-            }
+        if let "+" | "-" = a {
+            return false; // cannot be any lower precedence
         }
-        true
+        if let Tostsken::Word(ref bop) = b {
+            return matches!(bop.as_str(), "+" | "-");
+        }
+        false
     }
 
     #[derive(Debug)]
