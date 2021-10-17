@@ -13,6 +13,9 @@ which language
 - scratch
 - tost :)
 
+
+https://switzerb.github.io/imposter/algorithms/2021/01/12/dijkstra-two-stack.html
+
 ## 1. Lexer
 started
 TODO: 
