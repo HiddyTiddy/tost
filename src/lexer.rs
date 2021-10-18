@@ -18,6 +18,7 @@ pub mod lex {
             self.push(match val.as_str() {
                 "toaster" => Tostsken::FunctionToaster,
                 ":}" | ":{" | "{:" | "}:" => Tostsken::Brace(val),
+                "if" => Tostsken::If,
                 // "}" | "{" => Tostsken::Brace(val),
                 // " " | "," | ":" | "<" | ">" | "(" | ")" | "." | ";" | "\n" | "\t" => Tostsken::OperatorOrSthIdk(val),
                 ";" => Tostsken::Semicolon,
