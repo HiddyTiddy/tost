@@ -13,6 +13,7 @@ pub mod parse {
         Brace(String),
         OpenParenthesis,
         CloseParenthesis,
+        If,
         Semicolon,
         Equals,
         Integer(i64),
