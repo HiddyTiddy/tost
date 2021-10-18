@@ -72,8 +72,8 @@ fn main() {
     let lex = lex::lexer(source);
     // println!("{:?}\n\n", lex);
     let parsed = parse_tree::parse(lex);
-    // println!("{:?}", parsed);
+    println!("{:?}", parsed);
     // parse_root node on top bc im too lazy to have a wrapper recursion function lol
-    save_dot("graph.dot", &to_dot(parsed))
-    //println!("[\x1b[0;34mtost\x1b[0m]");
+    save_dot("graph.dot", &to_dot(parsed));
+    println!("[\x1b[0;34mtost\x1b[0m]");
 }
