@@ -133,6 +133,7 @@ pub mod parse_tree {
                 };
             }
 
+            
             for child in all {
                 let mut child_node = Node::new();
                 match child {
@@ -262,6 +263,8 @@ pub mod parse_tree {
                                 }));
                             }
                             operator_stack.push(tok.to_owned());
+                        } else {
+                            value_stack.push(OpWrapper::Atom(tok.to_owned()));
                         }
                     }
                     _ => (),
