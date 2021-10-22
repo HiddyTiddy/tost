@@ -18,6 +18,7 @@ pub mod parse {
         Equals,
         Integer(i64),
         Float(f64),
+        Boolean(bool),
         // Number(String),
         OperatorOrSthIdk(String),
     }
@@ -36,6 +37,7 @@ pub mod parse {
     #[derive(Debug)]
     pub enum StatementType {
         Declaration(Vec<Tostsken>),
+        Conditional((Tostsken, Vec<Tostsken>, Vec<Tostsken>)),
         Other(Vec<Tostsken>),
     }
 
