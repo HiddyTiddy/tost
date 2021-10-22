@@ -19,7 +19,7 @@ pub mod parse_tree {
         }
 
         fn parse_funcs(&mut self, tokens: Vec<Tostsken>) {
-            //println!("\n   parse_funcs {:?}", tokens);
+            // println!("\n   parse_funcs {:?}", tokens);
             // this function finds the bounds of functions on the Token ``Tostsken'' vector
             //
             // we expect to have multiple functions / non-function areas
@@ -33,7 +33,7 @@ pub mod parse_tree {
                         if depth == -1
                         // completely outside of functions
                         {
-                            depth = 1; // we are now in the function
+                            depth = 0; // we are now in the function
                             all.push(current_block);
                             current_block = vec![];
                         } else {
@@ -44,22 +44,33 @@ pub mod parse_tree {
                     }
                     // symbol :{, }:, {:, or :}
                     Tostsken::Brace(ref op) => {
-                        if depth > 0 && (op == ":}" || op == "}:") {
-                            depth -= 1;
+                        if depth != -1 {
+                            if op == ":}" || op == "}:" {
+                                assert_ne!(depth, 0);
+                                depth -= 1;
+                            }
+                            else {
+                                depth += 1;
+                            }
                         }
+                        current_block.push(i);
+                        if depth == 0 {
+                            // current_block.pop();
+                            all.push(current_block);
+                            depth = -1;
+                            current_block = vec![];
+                        }
+                        continue;
                         // else if op == "{:" || op == ":{" {
                         //     depth += 1;
                         // }
-                    }
+                    },
+                    Tostsken::WhiteSpace(_) => continue, // not sure but it's much cleaner so yea
                     _ => (),
                 };
                 // add the token to the current block
                 current_block.push(i);
-                if depth == 0 {
-                    all.push(current_block);
-                    depth = -1;
-                    current_block = vec![];
-                }
+                
             }
 
             // after the loop, there might still be values in the block such as in
@@ -100,32 +111,70 @@ pub mod parse_tree {
         //   statements (x = 12, if asdas {: :}, function calls)
         //      statement
         fn parse_statements(&mut self, tokens: Vec<Tostsken>) {
-            //println!("\nparse_statements: {:?}", tokens);
+            // println!("\nparse_statements: {:?}", tokens);
+            // if let Some(Tostsken::Brace(br)) = tokens.last() {
+            //     if br == "}:" {
+            //         tokens.pop();
+            //     }
+            // }
 
             let mut all: Vec<StatementType> = vec![];
             let mut current: Vec<Tostsken> = vec![];
-            let mut depth = -1; // currently not in block
+            let mut depth = -100; // currently not in block
+
+            // let mut conditional: [Vec<Tostsken>; 3] = [vec![], vec![], vec![]];
+            let mut conditional_type: Option<Tostsken> = None;
+            let mut conditional_condition: Vec<Tostsken> = vec![];
 
             for i in tokens {
                 // add to current until End Of Statement is reached
                 match i {
                     Tostsken::FunctionToaster => unreachable!(), // i think this is not reachable
+                    Tostsken::If => {
+                        // cleanup current
+                        //all.push(StatementType::Other(current));
+                        current = vec![];
+                        // set depth to "if" mode
+                        // push if keyword
+                        depth = -1;
+                        conditional_type = Some(Tostsken::If);
+                    }
                     Tostsken::Brace(ref brace) => {
+                        assert_ne!(depth, -100, "braces without associated function");
                         if depth == -1 {
-                            depth = 1;
+                            conditional_condition = current;
+                            current = vec![];
+                            depth = 0;
                         }
                         if brace == "}:" || brace == ":}" {
                             depth -= 1;
+                        } else {
+                            // open brace
+                            depth += 1;
                         }
                         current.push(i);
-                        if depth == 1 {
-                            all.push(StatementType::Other(current));
-                            current = vec![];
+                        if depth == 0 {
+                            if let Some(cond_type) = conditional_type {
+                                all.push(StatementType::Conditional((
+                                    cond_type,
+                                    conditional_condition,
+                                    current,
+                                )));
+                                conditional_type = None;
+                                conditional_condition = vec![];
+                                current = vec![];
+                            } else {
+                                panic!("{}", "missing condition keyword");
+                            }
                         }
                     } // yeah,
                     Tostsken::Semicolon => {
-                        all.push(StatementType::Declaration(current));
-                        current = vec![];
+                        if depth < 0 {
+                            all.push(StatementType::Declaration(current));
+                            current = vec![];
+                        } else {
+                            current.push(i);
+                        }
                     }
                     _ => {
                         current.push(i);
@@ -133,7 +182,8 @@ pub mod parse_tree {
                 };
             }
 
-            
+            // println!("statements {:?}", &all);
+
             for child in all {
                 let mut child_node = Node::new();
                 match child {
@@ -141,11 +191,40 @@ pub mod parse_tree {
                         //println!("declaration {:?}", decl);
                         child_node.parse_declaration(decl);
                     }
-                    _ => todo!(),
+                    StatementType::Conditional((cond_type, condition, body)) => {
+                        child_node.parse_conditional(cond_type, condition, body)
+                    }
+                    x => todo!("{:?}", x),
                 }
                 self.children.push(child_node);
             }
             // unimplemented!();
+        }
+
+        fn parse_conditional(
+            &mut self,
+            typ: Tostsken,
+            condition: Vec<Tostsken>,
+            body: Vec<Tostsken>,
+        ) {
+            match typ {
+                Tostsken::If => self.content = Some("if".to_string()),
+                _ => unimplemented!(),
+            }
+            let mut condition_child = Node::new();
+            condition_child.parse_condition(condition);
+
+            let mut body_child = Node::new();
+            body_child.parse_statements(body[1..body.len() - 1].to_vec());
+            body_child.content = Some("block".to_string());
+            self.children = vec![condition_child, body_child];
+        }
+
+        fn parse_condition(&mut self, condition: Vec<Tostsken>) {
+            // TODO allow for more complicated statements lol
+            if let Tostsken::Boolean(b_word) = condition.last().expect("empty condition") {
+                self.content = Some(format!("{}", b_word));
+            }
         }
 
         fn parse_declaration(&mut self, tokens: Vec<Tostsken>) {
@@ -320,7 +399,9 @@ pub mod parse_tree {
      * function that carves the function body out of a vector of tokens
      * of form [FunctionToaster, ..., ":{" | "{:", ..., ":}"|"}:"]
      */
-    fn find_function_body(tokens: Vec<Tostsken>) -> (String, Vec<Tostsken>) {
+    fn find_function_body(mut tokens: Vec<Tostsken>) -> (String, Vec<Tostsken>) {
+        assert!(matches!(tokens.last(), Some(Tostsken::Brace(_))));
+        tokens.pop();
         let mut in_body = false;
         let mut out = vec![];
         let mut depth = 1; // this is my fav trick
