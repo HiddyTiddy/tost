@@ -259,6 +259,7 @@ pub mod parse_tree {
                     // let mut child = Node::new();
                     match atom {
                         Tostsken::Word(w) => self.content = Some(w.to_string()),
+                        Tostsken::Stringy(w) => self.content = Some(w.to_string()),
                         Tostsken::Integer(i) => self.content = Some(format!("{}", i)),
                         Tostsken::Float(f) => self.content = Some(format!("{}", f)),
                         Tostsken::OperatorOrSthIdk(_) => unreachable!(),
@@ -289,6 +290,7 @@ pub mod parse_tree {
                     Tostsken::Integer(integer) => self.content = Some(format!("{}", integer)),
                     Tostsken::Float(floateger) => self.content = Some(format!("{}", floateger)),
                     Tostsken::Word(word) => self.content = Some(word.to_string()),
+                    Tostsken::Stringy(text) => self.content = Some(text.to_string()),
                     token => {
                         unimplemented!("parse_arithmetic type {:?} not yet implemented", token);
                     }

@@ -19,6 +19,7 @@ pub mod parse {
         Integer(i64),
         Float(f64),
         Boolean(bool),
+        Stringy(String),
         // Number(String),
         OperatorOrSthIdk(String),
     }

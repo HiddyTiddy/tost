@@ -48,6 +48,8 @@ pub mod lex {
         let mut word = String::from("");
         let mut commenting = false;
         // let number_regex = Regex::new(r"^(\+|-)?\d+$");
+        let mut in_string: bool = false;
+        let mut escaping: bool = false;
         for ch in code.chars() {
             if word == "!!" {
                 commenting = true;
@@ -59,8 +61,36 @@ pub mod lex {
                 }
                 continue;
             }
+
+            if in_string {
+                if !escaping {
+                    match ch {
+                        '\\' => escaping = true,
+                        '"' => {
+                            in_string = false;
+                            tokens.push(Tostsken::Stringy(format!("\"{}\"", word)));
+                            word = String::new();
+                        }
+                        _ => word.push(ch),
+                    }
+                } else {
+                    word.push(match ch {
+                        'n' => '\n',
+                        't' => '\t',
+                        'r' => '\r',
+                        _ => ch,
+                    });
+                    escaping = false
+                }
+                continue;
+            }
+
             // works but doesnt
             match ch {
+                '"' => {
+                    in_string = true;
+                    continue;
+                }
                 ' ' | ',' /*| ':'*/ | '<' | '>' | '(' | ')' /*| '.'*/ | ';' | '=' | '\n' | '\t' => {
                     tokens.add(word);
                     word = String::from("");
