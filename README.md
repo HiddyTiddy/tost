@@ -50,6 +50,32 @@ TODO:
 - (for) let's first just live with while, bc i said so.
 - arithmetic
 ## 3. AST Generator
+- for every possible node function detailed struct
+- goal: create new tree structure that is easier to be converted to an executable format
+- todos
+  - function (toaster):
+    - name / identifier
+    - body child
+    - (arguments)
+  - variable declarations
+    - lhs child
+    - rhs child
+  - conditionals
+    - condition child
+    - body child
+  - variable names (decl)
+    - name / identifier
+    - type?
+    - scope?
+  - variable names (ref)
+    - reference to declared variable
+  - literals
+    - type
+    - value
+  - operations
+    - lhs
+    - rhs
+    - operator
 ## 4. Assembly Generator
 TODO:
 im actually quite happy already if we have a program that just does x = 5; and sucessfully generates the assembly for that
