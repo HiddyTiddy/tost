@@ -10,6 +10,8 @@ pub use defs::parse;
 pub use lexer::lex;
 pub use parser::parse_tree;
 
+use crate::parse::Tostsken;
+
 // no idea
 fn read_file(fname: &str) -> Result<String, io::Error> {
     let fhandle = File::open(fname)?;
@@ -34,7 +36,10 @@ fn _to_dot(ptree: Node, parent: &str, idx: &mut i32) -> String {
         disp_name = name;
     }
 
-    let mut out = format!("\"{}\" [label=\"{}\"]\n\"{}\" -- \"{}\";\n", id, disp_name, parent, id);
+    let mut out = format!(
+        "\"{}\" [label=\"{}\"]\n\"{}\" -- \"{}\";\n",
+        id, disp_name, parent, id
+    );
 
     for child in ptree.children {
         *idx += 1;
@@ -54,8 +59,8 @@ fn to_dot(ptree: Node) -> String {
     out
 }
 
-fn save_dot(filename :&str, dot_code: &str) {
-    let mut file= File::create(filename).unwrap();
+fn save_dot(filename: &str, dot_code: &str) {
+    let mut file = File::create(filename).unwrap();
 
     write!(&mut file, "graph tost {{ \n{} }}", dot_code).unwrap();
 }
@@ -69,11 +74,12 @@ fn main() {
         }
     };
     // println!("{}", source);
-    let lex = lex::lexer(source);
+    let lex: Vec<Tostsken> = lex::lexer(source);
     // println!("{:?}\n\n", lex);
-    let parsed = parse_tree::parse(lex);
+    let parsed:Node = parse_tree::parse(lex);
     // println!("{:?}", parsed);
     // parse_root node on top bc im too lazy to have a wrapper recursion function lol
+    // dbg!(&parsed);
     save_dot("graph.dot", &to_dot(parsed));
     println!("[\x1b[0;34mtost\x1b[0m]");
 }
