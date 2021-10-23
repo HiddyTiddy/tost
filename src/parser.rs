@@ -380,16 +380,16 @@ pub mod parse_tree {
         //     return matches!(bop.as_str(), "+" | "-");
         // }
         let ra: i32 = match a {
-            "+" | "-" => 1,
-            "*" | "/" => 2,
-            "<" | ">" => 3,
+            "<" | ">" => 1,
+            "+" | "-" => 2,
+            "*" | "/" => 3,
             _ => unreachable!(),
         };
         let rb = match b {
             Tostsken::Word(x) => match x.as_str() {
-                "+" | "-" => 1,
-                "*" | "/" => 2,
-                "<" | ">" => 3,
+                "<" | ">" => 1,
+                "+" | "-" => 2,
+                "*" | "/" => 3,
                 _ => unreachable!(),
             },
             _ => unreachable!(),
