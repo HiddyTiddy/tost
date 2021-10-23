@@ -210,19 +210,13 @@ pub mod parse_tree {
                 _ => unimplemented!(),
             }
             let mut condition_child = Node::new();
-            condition_child.parse_condition(condition);
+            condition_child.parse_arithmetic(condition);
+            // == does not exist yet
 
             let mut body_child = Node::new();
             body_child.parse_statements(body[1..body.len() - 1].to_vec());
             body_child.content = Some("block".to_string());
             self.children = vec![condition_child, body_child];
-        }
-
-        fn parse_condition(&mut self, condition: Vec<Tostsken>) {
-            // TODO allow for more complicated statements lol
-            if let Tostsken::Boolean(b_word) = condition.last().expect("empty condition") {
-                self.content = Some(format!("{}", b_word));
-            }
         }
 
         fn parse_declaration(&mut self, tokens: Vec<Tostsken>) {
