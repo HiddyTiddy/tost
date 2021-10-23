@@ -31,7 +31,8 @@ fn read_file(fname: &str) -> Result<String, io::Error> {
 fn _to_dot(ptree: Node, parent: &str, idx: &mut i32) -> String {
     let mut id: String = format!("Node_{}", idx);
     let mut disp_name = "Node".to_string();
-    if let Some(name) = ptree.content {
+    if let Some(mut name) = ptree.content {
+        name = str::replace(&name, "\"", "\\\"");
         id = format!("{}_{}", name, idx);
         disp_name = name;
     }
@@ -66,7 +67,7 @@ fn save_dot(filename: &str, dot_code: &str) {
 }
 
 fn main() {
-    let source = match read_file("./foo.tst") {
+    let source = match read_file("./testing/strings.tst") {
         Ok(data) => data,
         Err(err) => {
             eprintln!("couldn't read file {}", err);
