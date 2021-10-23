@@ -7,4 +7,7 @@ foo.tst
 *.dot
 *.png
 *.svg
-/examples
+/testing
+# since we are only in development, 
+# and the language can not even be compiled yet, this directory is 
+# exclusively for testing
