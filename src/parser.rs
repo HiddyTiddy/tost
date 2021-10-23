@@ -288,6 +288,7 @@ pub mod parse_tree {
                 match &tokens[0] {
                     Tostsken::Integer(integer) => self.content = Some(format!("{}", integer)),
                     Tostsken::Float(floateger) => self.content = Some(format!("{}", floateger)),
+                    Tostsken::Word(word) => self.content = Some(word.to_string()),
                     token => {
                         unimplemented!("parse_arithmetic type {:?} not yet implemented", token);
                     }
@@ -308,8 +309,8 @@ pub mod parse_tree {
                     Tostsken::CloseParenthesis => {
                         while !matches!(operator_stack.last(), Some(Tostsken::OpenParenthesis)) {
                             let op: Tostsken = operator_stack.pop().unwrap();
-                            let a: OpWrapper = value_stack.pop().unwrap();
                             let b: OpWrapper = value_stack.pop().unwrap();
+                            let a: OpWrapper = value_stack.pop().unwrap();
                             value_stack.push(OpWrapper::Expr(Op {
                                 lhs: Box::new(a),
                                 rhs: Box::new(b),
