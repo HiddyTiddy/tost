@@ -48,8 +48,7 @@ pub mod parse_tree {
                             if op == ":}" || op == "}:" {
                                 assert_ne!(depth, 0);
                                 depth -= 1;
-                            }
-                            else {
+                            } else {
                                 depth += 1;
                             }
                         }
@@ -64,13 +63,12 @@ pub mod parse_tree {
                         // else if op == "{:" || op == ":{" {
                         //     depth += 1;
                         // }
-                    },
+                    }
                     Tostsken::WhiteSpace(_) => continue, // not sure but it's much cleaner so yea
                     _ => (),
                 };
                 // add the token to the current block
                 current_block.push(i);
-                
             }
 
             // after the loop, there might still be values in the block such as in
@@ -327,7 +325,7 @@ pub mod parse_tree {
                         operator_stack.pop();
                     }
                     Tostsken::Word(ref w) => {
-                        if let "+" | "-" | "*" | "/" = w.as_str() {
+                        if let "+" | "-" | "*" | "/" | "<" | ">" = w.as_str() {
                             while !operator_stack.is_empty()
                                 && !lower_precedence(w, operator_stack.last().unwrap().to_owned())
                             //matches!(operator_stack.last().unwrap(), Tostsken::Word(_))
@@ -352,8 +350,8 @@ pub mod parse_tree {
 
             while !operator_stack.is_empty() {
                 let op: Tostsken = operator_stack.pop().unwrap();
-                let a: OpWrapper = value_stack.pop().unwrap();
                 let b: OpWrapper = value_stack.pop().unwrap();
+                let a: OpWrapper = value_stack.pop().unwrap();
                 value_stack.push(OpWrapper::Expr(Op {
                     lhs: Box::new(a),
                     rhs: Box::new(b),
@@ -370,17 +368,40 @@ pub mod parse_tree {
      * helper function to parse arithmetic
      */
     fn lower_precedence(a: &str, b: Tostsken) -> bool {
+        /*
+            <|> *|/ +|- <a
+        <|>  0   0   0
+        *|/  1   0   0
+        +|-  1   1   0
+         ^b
+        */
         // returns true if b has lower precedence than a
         if let Tostsken::OpenParenthesis | Tostsken::CloseParenthesis = b {
             return true;
         }
-        if let "+" | "-" = a {
-            return false; // cannot be any lower precedence
-        }
-        if let Tostsken::Word(ref bop) = b {
-            return matches!(bop.as_str(), "+" | "-");
-        }
-        false
+        // if let "+" | "-" = a {
+        //     return false; // cannot be any lower precedence
+        // }
+        // if let Tostsken::Word(ref bop) = b {
+        //     return matches!(bop.as_str(), "+" | "-");
+        // }
+        let ra: i32 = match a {
+            "+" | "-" => 1,
+            "*" | "/" => 2,
+            "<" | ">" => 3,
+            _ => unreachable!(),
+        };
+        let rb = match b {
+            Tostsken::Word(x) => match x.as_str() {
+                "+" | "-" => 1,
+                "*" | "/" => 2,
+                "<" | ">" => 3,
+                _ => unreachable!(),
+            },
+            _ => unreachable!(),
+        };
+
+        rb < ra
     }
 
     #[derive(Debug)]
