@@ -42,17 +42,52 @@ pub mod parse {
         Other(Vec<Tostsken>),
     }
 
+    #[derive(Debug)]
+    pub enum Types {
+        Integer,
+        Float,
+        Boolean,
+        Stringy,
+    }
+
+    #[derive(Debug, Clone)]
+    pub enum Literals {
+        Integer(i64),
+        Float(f64),
+        Boolean(bool),
+        Stringy(String),
+    }
+
     pub mod parse_tree {
+        use super::Literals;
+
+
+        #[derive(Debug, Clone)]
+        pub enum NodeType {
+            Function(String),
+            Assignment,
+            Variable(String),
+            // TODO: enum for operations
+            Operation(String),
+            Literal(Literals),
+            StatementList,
+            If,
+            While,
+            Block,
+        }
+
         #[derive(Debug)]
         pub struct Node {
             pub children: Vec<Node>,
-            pub content: Option<String>,
+            pub content: Option<NodeType>,
             // pub id: String,
         }
     }
 
     // i have no idea what i am doing
     pub mod abstract_syntax_tree {
+        use super::{Literals, Types};
+
         #[derive(Debug)]
         pub struct FunctionNode {
             pub id: String,
@@ -60,13 +95,7 @@ pub mod parse {
             // pub arguments: Vec<?>,
         }
 
-        #[derive(Debug)]
-        pub enum Types {
-            Integer,
-            Float,
-            Boolean,
-            Stringy,
-        }
+
 
         #[derive(Debug)]
         pub struct DeclarationNode {
@@ -94,13 +123,6 @@ pub mod parse {
             Div,
         }
 
-        #[derive(Debug)]
-        pub enum Literals {
-            Integer(i64),
-            Float(f64),
-            Boolean(bool),
-            Stringy(String),
-        }
 
         #[derive(Debug)]
         pub struct ArithmeticNode {
