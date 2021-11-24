@@ -1,7 +1,7 @@
 mod defs;
 mod lexer;
 mod parser;
-//mod ast;
+mod ast;
 
 use defs::parse::parse_tree::Node;
 use std::fs::File;
@@ -101,7 +101,7 @@ fn main() {
     // parse_root node on top bc im too lazy to have a wrapper recursion function lol
     // dbg!(&parsed);
     save_dot("graph.dot", &to_dot(&parsed));
-    // let ast = ast::generate_ast(parsed);
-    // println!("{:?}", ast);
+    let ast = ast::generate_ast(parsed);
+    println!("{:?}", ast);
     println!("[\x1b[0;34mtost\x1b[0m]");
 }

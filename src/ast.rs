@@ -1,5 +1,8 @@
-use crate::parse::abstract_syntax_tree::{ArithmeticNode, ArithmeticStuff, AstNode, DeclarationNode, FunctionNode};
-use crate::parse::{Types, parse_tree};
+use crate::parse::abstract_syntax_tree::{
+    ArithmeticNode, AstNode, DeclarationNode, FunctionNode,
+};
+use crate::parse::parse_tree::NodeType;
+use crate::parse::{parse_tree, Types};
 
 pub fn generate_ast(parse_tree: parse_tree::Node) -> Vec<AstNode> {
     // parse all functions high level here
@@ -7,33 +10,39 @@ pub fn generate_ast(parse_tree: parse_tree::Node) -> Vec<AstNode> {
 
     for child in parse_tree.children {
         let function = parse_func(child);
-        out.push( AstNode::FunctionNode(function));
+        out.push(AstNode::FunctionNode(function));
     }
 
-    out    
+    out
 }
 
-fn parse_func(function: parse_tree::Node) -> FunctionNode{
-    let fname = function.content.expect("no function name");
+fn parse_func(function: parse_tree::Node) -> FunctionNode {
+    let fname = if let NodeType::Function(fname) = function.content.expect("no function name") {
+        fname
+    } else {
+        unreachable!("function name missing");
+    };
     println!("parsing function {} {:?}", &fname, function.children[0]);
     let mut body = vec![];
     for i in &function.children[0].children {
-        if matches!(&i.content, Some(x) if x == "=") {
+        if let Some(NodeType::If) = &i.content {
             let (rhs, typ) = parse_declaration(fname.clone(), &i.children[1]);
-            let var_name = &i.children[0].content.as_ref().expect("no variable name");
+            // let var_name = &i.children[0].content.as_ref().expect("no variable name");
+            let var_name = if let Some(NodeType::Variable(varname)) = &i.children[0].content {
+                varname
+            } else {
+                panic!("no variable name found")
+            };
             let decl = DeclarationNode {
-                id: format!("{}var_{}", fname, var_name), 
+                id: format!("{}var_{}", fname, var_name),
                 // todo: use illegal tost characters for the ids so that you cant do hacky shit idk
                 rhs,
-                typ
+                typ,
             };
             body.push(AstNode::DeclarationNode(decl));
         }
     }
-    FunctionNode {
-        id: fname,
-        body
-    }
+    FunctionNode { id: fname, body }
 }
 
 fn parse_declaration(func_name: String, right: &parse_tree::Node) -> (ArithmeticNode, Types) {
@@ -43,7 +52,7 @@ fn parse_declaration(func_name: String, right: &parse_tree::Node) -> (Arithmetic
     //     if !matches!(var_name.as_str(), "+"|"-"|"*"|"/"|">"|"<") {
     //         lhs = ArithmeticStuff:: var_name.clone();
     //     } else {
-    //         lhs = right.children[0];  
+    //         lhs = right.children[0];
     //     }
     // }
     // let out = ArithmeticNode {
@@ -51,6 +60,6 @@ fn parse_declaration(func_name: String, right: &parse_tree::Node) -> (Arithmetic
     //     rhs: None,
     //     operation: None,
     // };
-    todo!("[\x1b[0;31mCHANGE Node.content TO BE NOT A STRING\x1b[0m]");
-    // unimplemented!();
+    // todo!("[\x1b[0;31mCHANGE Node.content TO BE NOT A STRING\x1b[0m]");
+    unimplemented!();
 }
