@@ -1,6 +1,7 @@
 mod defs;
 mod lexer;
 mod parser;
+mod ast;
 
 use defs::parse::parse_tree::Node;
 use std::fs::File;
@@ -28,10 +29,10 @@ fn read_file(fname: &str) -> Result<String, io::Error> {
     Ok(out)
 }
 
-fn _to_dot(ptree: Node, parent: &str, idx: &mut i32) -> String {
+fn _to_dot(ptree: &Node, parent: &str, idx: &mut i32) -> String {
     let mut id: String = format!("Node_{}", idx);
     let mut disp_name = "Node".to_string();
-    if let Some(mut name) = ptree.content {
+    if let Some(mut name) = ptree.content.to_owned() {
         name = str::replace(&name, "\"", "\\\"");
         id = format!("{}_{}", name, idx);
         disp_name = name;
@@ -42,7 +43,7 @@ fn _to_dot(ptree: Node, parent: &str, idx: &mut i32) -> String {
         id, disp_name, parent, id
     );
 
-    for child in ptree.children {
+    for child in &ptree.children {
         *idx += 1;
         let tmp = &_to_dot(child, &id, idx);
         out += tmp;
@@ -51,10 +52,10 @@ fn _to_dot(ptree: Node, parent: &str, idx: &mut i32) -> String {
     out
 }
 
-fn to_dot(ptree: Node) -> String {
+fn to_dot(ptree: &Node) -> String {
     let mut idx = 0;
     let mut out = "\"root\" [label=\"root\"]\n\n".to_string();
-    for ch in ptree.children {
+    for ch in &ptree.to_owned().children {
         out += &_to_dot(ch, "root", &mut idx);
     }
     out
@@ -67,7 +68,7 @@ fn save_dot(filename: &str, dot_code: &str) {
 }
 
 fn main() {
-    let source = match read_file("./testing/strings.tst") {
+    let source = match read_file("./foo.tst") {
         Ok(data) => data,
         Err(err) => {
             eprintln!("couldn't read file {}", err);
@@ -81,6 +82,8 @@ fn main() {
     // println!("{:?}", parsed);
     // parse_root node on top bc im too lazy to have a wrapper recursion function lol
     // dbg!(&parsed);
-    save_dot("graph.dot", &to_dot(parsed));
+    save_dot("graph.dot", &to_dot(&parsed));
+    let ast = ast::generate_ast(parsed);
+    println!("{:?}", ast);
     println!("[\x1b[0;34mtost\x1b[0m]");
 }
