@@ -2,6 +2,7 @@ pub mod parse_tree {
 
     use crate::defs::parse::parse_tree::*;
     use crate::defs::parse::Tostsken;
+    use crate::parse::Literals;
     use crate::parse::StatementType;
 
     impl Default for Node {
@@ -95,10 +96,11 @@ pub mod parse_tree {
                         // but we never actually wanted to call the functions, right?
                         let function = find_function_body(child);
                         child_node.parse_funcs(function.1); // function body
-                        child_node.content = Some(function.0); // name of function
+                        child_node.content = Some(NodeType::Function(function.0));
+                    // name of function
                     } else {
                         child_node.parse_statements(child);
-                        child_node.content = Some("statement-list".to_string());
+                        child_node.content = Some(NodeType::StatementList);
                     }
                     self.children.push(child_node);
                 }
@@ -206,7 +208,7 @@ pub mod parse_tree {
             body: Vec<Tostsken>,
         ) {
             match typ {
-                Tostsken::If => self.content = Some("if".to_string()),
+                Tostsken::If => self.content = Some(NodeType::If),
                 _ => unimplemented!(),
             }
             let mut condition_child = Node::new();
@@ -215,7 +217,7 @@ pub mod parse_tree {
 
             let mut body_child = Node::new();
             body_child.parse_statements(body[1..body.len() - 1].to_vec());
-            body_child.content = Some("block".to_string());
+            body_child.content = Some(NodeType::Block);
             self.children = vec![condition_child, body_child];
         }
 
@@ -233,8 +235,8 @@ pub mod parse_tree {
                     rhs.push(tok);
                 } else {
                     match tok {
-                        Tostsken::Word(x) => {
-                            lhs.content = Some(x);
+                        Tostsken::Word(varname) => {
+                            lhs.content = Some(NodeType::Variable(varname));
                         }
                         Tostsken::Equals => {
                             rhs_time = true;
@@ -245,7 +247,7 @@ pub mod parse_tree {
             }
 
             self.children.push(lhs);
-            self.content = Some("=".to_string());
+            self.content = Some(NodeType::Assignment);
             let mut right_child = Node::new();
 
             right_child.parse_arithmetic(rhs);
@@ -258,12 +260,18 @@ pub mod parse_tree {
                 OpWrapper::Atom(atom) => {
                     // let mut child = Node::new();
                     match atom {
-                        Tostsken::Word(w) => self.content = Some(w.to_string()),
-                        Tostsken::Stringy(w) => self.content = Some(w.to_string()),
-                        Tostsken::Integer(i) => self.content = Some(format!("{}", i)),
-                        Tostsken::Float(f) => self.content = Some(format!("{}", f)),
+                        Tostsken::Word(w) => self.content = Some(NodeType::Variable(w.to_owned())),
+                        Tostsken::Stringy(w) => {
+                            self.content = Some(NodeType::Literal(Literals::Stringy(w.to_owned())))
+                        }
+                        Tostsken::Integer(i) => {
+                            self.content = Some(NodeType::Literal(Literals::Integer(i.to_owned())))
+                        }
+                        Tostsken::Float(f) => {
+                            self.content = Some(NodeType::Literal(Literals::Float(f.to_owned())))
+                        }
                         Tostsken::OperatorOrSthIdk(_) => unreachable!(),
-                        _ => (),
+                        _ => unreachable!(),
                     }
 
                     // self.children = vec![child];
@@ -275,8 +283,8 @@ pub mod parse_tree {
                     lhs._parse_arithmetic(&operation.lhs);
                     self.children = vec![lhs, rhs];
                     self.content = Some(match &operation.operator {
-                        Tostsken::OperatorOrSthIdk(op) => op.to_owned(),
-                        Tostsken::Word(op) => op.to_owned(),
+                        Tostsken::OperatorOrSthIdk(op) => NodeType::Operation(op.to_owned()),
+                        Tostsken::Word(op) => NodeType::Variable(op.to_owned()),
                         _ => unreachable!(),
                     })
                 }
@@ -287,10 +295,16 @@ pub mod parse_tree {
             if tokens.len() == 1 {
                 // a bit neater graph
                 match &tokens[0] {
-                    Tostsken::Integer(integer) => self.content = Some(format!("{}", integer)),
-                    Tostsken::Float(floateger) => self.content = Some(format!("{}", floateger)),
-                    Tostsken::Word(word) => self.content = Some(word.to_string()),
-                    Tostsken::Stringy(text) => self.content = Some(text.to_string()),
+                    Tostsken::Integer(integer) => {
+                        self.content = Some(NodeType::Literal(Literals::Integer(*integer)))
+                    }
+                    Tostsken::Float(floateger) => {
+                        self.content = Some(NodeType::Literal(Literals::Float(*floateger)))
+                    }
+                    Tostsken::Word(word) => self.content = Some(NodeType::Variable(word.to_owned())),
+                    Tostsken::Stringy(text) => {
+                        self.content = Some(NodeType::Literal(Literals::Stringy(text.to_owned())))
+                    }
                     token => {
                         unimplemented!("parse_arithmetic type {:?} not yet implemented", token);
                     }
@@ -474,7 +488,7 @@ pub mod parse_tree {
         let mut root = Node::new(); // this is the root of the tree
         root.parse_funcs(tokens); // parse the tokens on function level
                                   // and have them be children of root
-        root.content = Some("root".to_string());
+        root.content = None;
         root
     }
 
