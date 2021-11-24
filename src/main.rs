@@ -1,7 +1,7 @@
 mod defs;
 mod lexer;
 mod parser;
-mod ast;
+//mod ast;
 
 use defs::parse::parse_tree::Node;
 use std::fs::File;
@@ -9,9 +9,10 @@ use std::io::{self, BufRead, BufReader, Write};
 
 pub use defs::parse;
 pub use lexer::lex;
-pub use parser::parse_tree;
+use parse::parse_tree::NodeType;
 
 use crate::parse::Tostsken;
+use crate::parser::parse_tree;
 
 // no idea
 fn read_file(fname: &str) -> Result<String, io::Error> {
@@ -32,7 +33,24 @@ fn read_file(fname: &str) -> Result<String, io::Error> {
 fn _to_dot(ptree: &Node, parent: &str, idx: &mut i32) -> String {
     let mut id: String = format!("Node_{}", idx);
     let mut disp_name = "Node".to_string();
-    if let Some(mut name) = ptree.content.to_owned() {
+    if let Some(name) = ptree.content.to_owned() {
+
+        let mut name:String = match name {
+            NodeType::Function(fname) => fname,
+            NodeType::Assignment => "=".to_string(),
+            NodeType::Variable(varname) => varname,
+            NodeType::Operation(op) => op,
+            NodeType::Literal(literal) => match literal {
+                parse::Literals::Integer(int) => format!("{}", int),
+                parse::Literals::Float(float) => format!("{}", float),
+                parse::Literals::Boolean(boolean) => if boolean { "true" } else { "false" }.to_string(),
+                parse::Literals::Stringy(stringy) => stringy.to_string(),
+            },
+            NodeType::If => "if".to_string(),
+            NodeType::While => todo!(),
+            NodeType::Block => "block".to_string(),
+            NodeType::StatementList => "<statement list>".to_string(),
+        };
         name = str::replace(&name, "\"", "\\\"");
         id = format!("{}_{}", name, idx);
         disp_name = name;
@@ -68,7 +86,7 @@ fn save_dot(filename: &str, dot_code: &str) {
 }
 
 fn main() {
-    let source = match read_file("./foo.tst") {
+    let source = match read_file("./testing/strings.tst") {
         Ok(data) => data,
         Err(err) => {
             eprintln!("couldn't read file {}", err);
@@ -83,7 +101,7 @@ fn main() {
     // parse_root node on top bc im too lazy to have a wrapper recursion function lol
     // dbg!(&parsed);
     save_dot("graph.dot", &to_dot(&parsed));
-    let ast = ast::generate_ast(parsed);
-    println!("{:?}", ast);
+    // let ast = ast::generate_ast(parsed);
+    // println!("{:?}", ast);
     println!("[\x1b[0;34mtost\x1b[0m]");
 }
