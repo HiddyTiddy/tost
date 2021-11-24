@@ -1,5 +1,5 @@
-use crate::parse::abstract_syntax_tree::{ArithmeticNode, ArithmeticStuff, AstNode, DeclarationNode, FunctionNode, Types};
-use crate::parse::parse_tree;
+use crate::parse::abstract_syntax_tree::{ArithmeticNode, ArithmeticStuff, AstNode, DeclarationNode, FunctionNode};
+use crate::parse::{Types, parse_tree};
 
 pub fn generate_ast(parse_tree: parse_tree::Node) -> Vec<AstNode> {
     // parse all functions high level here
