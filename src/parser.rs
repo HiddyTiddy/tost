@@ -284,6 +284,7 @@ pub mod parse_tree {
                     self.children = vec![lhs, rhs];
                     self.content = Some(match &operation.operator {
                         Tostsken::OperatorOrSthIdk(op) => NodeType::Operation(op.to_owned()),
+                        Tostsken::Word(op) if matches!(op.as_str(), "+" | "-" | "*" | "/" | "<" | ">") => NodeType::Operation(op.to_owned()),
                         Tostsken::Word(op) => NodeType::Variable(op.to_owned()),
                         _ => unreachable!(),
                     })

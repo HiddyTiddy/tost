@@ -86,7 +86,7 @@ fn save_dot(filename: &str, dot_code: &str) {
 }
 
 fn main() {
-    let source = match read_file("./testing/strings.tst") {
+    let source = match read_file("./testing/ast.tst") {
         Ok(data) => data,
         Err(err) => {
             eprintln!("couldn't read file {}", err);

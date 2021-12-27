@@ -28,6 +28,7 @@ pub mod lex {
                 ")" => Tostsken::CloseParenthesis,
                 "true" => Tostsken::Boolean(true),
                 "false" => Tostsken::Boolean(false),
+                // "+" | "-" | "*" | "/" => Tostsken::OperatorOrSthIdk(val),
                 x => {
                     if float_regex.is_match(x) {
                         let val: f64 = x.to_string().parse().unwrap();

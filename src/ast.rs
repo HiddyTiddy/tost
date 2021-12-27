@@ -25,28 +25,35 @@ fn parse_func(function: parse_tree::Node) -> FunctionNode {
     println!("parsing function {} {:?}", &fname, function.children[0]);
     let mut body = vec![];
     for i in &function.children[0].children {
-        if let Some(NodeType::If) = &i.content {
-            let (rhs, typ) = parse_declaration(fname.clone(), &i.children[1]);
-            // let var_name = &i.children[0].content.as_ref().expect("no variable name");
-            let var_name = if let Some(NodeType::Variable(varname)) = &i.children[0].content {
-                varname
-            } else {
-                panic!("no variable name found")
-            };
-            let decl = DeclarationNode {
-                id: format!("{}var_{}", fname, var_name),
-                // todo: use illegal tost characters for the ids so that you cant do hacky shit idk
-                rhs,
-                typ,
-            };
-            body.push(AstNode::DeclarationNode(decl));
+        if let Some(NodeType::If) = &i.content { // what
+            unimplemented!("what did i think here");
+            // let (rhs, typ) = parse_declaration(fname.clone(), &i.children[1]);
+            // // let var_name = &i.children[0].content.as_ref().expect("no variable name");
+            // let var_name = if let Some(NodeType::Variable(varname)) = &i.children[0].content {
+            //     varname
+            // } else {
+            //     panic!("no variable name found")
+            // };
+            // let decl = DeclarationNode {
+            //     id: format!("{}var_{}", fname, var_name),
+            //     // todo: use illegal tost characters for the ids so that you cant do hacky shit idk
+            //     rhs,
+            //     typ,
+            // };
+            // body.push(AstNode::DeclarationNode(decl));
+        } else {
+            assert_eq!(i.children.len(), 2);
+            parse_declaration(fname.clone(), &i.children[0], &i.children[1]);
         }
     }
     FunctionNode { id: fname, body }
 }
 
-fn parse_declaration(func_name: String, right: &parse_tree::Node) -> (ArithmeticNode, Types) {
-    println!("in func {} {:?}", func_name, right);
+fn parse_declaration(func_name: String, right: &parse_tree::Node, left: &parse_tree::Node) -> (ArithmeticNode, Types) {
+    println!("in func {} {:?} == {:?}", func_name, right, left);
+    // let mut op_stack = vec![];
+    // let mut val_stack = vec![];
+
     // let mut lhs;
     // if let Some(var_name) = &right.content {
     //     if !matches!(var_name.as_str(), "+"|"-"|"*"|"/"|">"|"<") {
