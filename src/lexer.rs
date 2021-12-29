@@ -50,7 +50,8 @@ pub mod lex {
         // let number_regex = Regex::new(r"^(\+|-)?\d+$");
         let mut in_string: bool = false;
         let mut escaping: bool = false;
-        for ch in code.chars() {
+        let mut chars = code.chars();
+        for ch in chars {
             if word == "!!" {
                 commenting = true;
                 word = String::from("");
@@ -82,26 +83,22 @@ pub mod lex {
                     });
                     escaping = false
                 }
-                continue;
-            }
-
-            // works but doesnt
-            match ch {
-                '"' => {
-                    in_string = true;
-                    continue;
+            } else {
+                // works but doesnt
+                match ch {
+                    '"' => {
+                        in_string = true;
+                    }
+                    ' ' | ',' /*| ':'*/ | '<' | '>' | '(' | ')' /*| '.'*/ | ';' | '=' | '\n' | '\t' => {
+                        tokens.add(word);
+                        word = String::from("");
+                        tokens.add(ch.to_string());
+                    },
+                    _ => {
+                        word.push(ch);
+                    }
                 }
-                ' ' | ',' /*| ':'*/ | '<' | '>' | '(' | ')' /*| '.'*/ | ';' | '=' | '\n' | '\t' => {
-                    tokens.add(word);
-                    word = String::from("");
-                    // if ch != ' '{ // actually preserve all white space
-                    tokens.add(ch.to_string());
-                    // }
-                    continue;
-                },
-                _ => {}
             }
-            word.push(ch);
         }
         // still eats newline but eh
         if !word.is_empty() {

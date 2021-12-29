@@ -67,7 +67,7 @@ fn save_dot(filename: &str, dot_code: &str) {
 }
 
 fn main() {
-    let source = match read_file("./testing/strings.tst") {
+    let source = match read_file("./testing/new.tst") {
         Ok(data) => data,
         Err(err) => {
             eprintln!("couldn't read file {}", err);
@@ -76,11 +76,12 @@ fn main() {
     };
     // println!("{}", source);
     let lex: Vec<Tostsken> = lex::lexer(source);
+    println!("{:?}", lex);
     // println!("{:?}\n\n", lex);
-    let parsed:Node = parse_tree::parse(lex);
+    //let parsed:Node = parse_tree::parse(lex);
     // println!("{:?}", parsed);
     // parse_root node on top bc im too lazy to have a wrapper recursion function lol
     // dbg!(&parsed);
-    save_dot("graph.dot", &to_dot(parsed));
-    println!("[\x1b[0;34mtost\x1b[0m]");
+    // save_dot("graph.dot", &to_dot(parsed));
+    // println!("[\x1b[0;34mtost\x1b[0m]");
 }
