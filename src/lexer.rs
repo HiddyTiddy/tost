@@ -45,16 +45,16 @@ pub mod lex {
 
     pub fn lexer(code: String) -> Vec<Tostsken> {
         let mut tokens = vec![];
-        let mut word = String::from("");
+        let mut word = String::new();
         let mut commenting = false;
         // let number_regex = Regex::new(r"^(\+|-)?\d+$");
         let mut in_string: bool = false;
         let mut escaping: bool = false;
-        let mut chars = code.chars();
-        for ch in chars {
+        let mut chars = code.chars().peekable();
+        while let Some(ch) = chars.next() {
             if word == "!!" {
                 commenting = true;
-                word = String::from("");
+                word = String::new();
             }
             if commenting {
                 if ch == '\n' {
@@ -91,9 +91,51 @@ pub mod lex {
                     }
                     ' ' | ',' /*| ':'*/ | '<' | '>' | '(' | ')' /*| '.'*/ | ';' | '=' | '\n' | '\t' => {
                         tokens.add(word);
-                        word = String::from("");
+                        word = String::new();
                         tokens.add(ch.to_string());
                     },
+                    ':' => {
+                        if let Some(after) = chars.peek() {
+                            tokens.add(word);
+                            word = String::new();
+                            if *after == '{'  {
+                                tokens.add(":{".to_string());
+                                chars.next();
+                            } else if *after == '}' {
+                                tokens.add(":}".to_string());
+                                chars.next();
+                            } else {
+                                tokens.add(':'.to_string());
+                            }
+                        } else {
+                            tokens.add(word);
+                            word = String::new();
+                            tokens.add(':'.to_string());
+                        }
+                    }
+                    '{' | '}' => {
+                        if let Some(after) = chars.peek() {
+                            tokens.add(word);
+                            word = String::new();
+                            if *after == ':'  {
+                                let mut tmp = ch.to_string();
+                                tmp.push(chars.next().unwrap());
+                                tokens.add(tmp);
+                            } else {
+                                tokens.add(ch.to_string());
+                            }
+                        } else {
+                            tokens.add(word);
+                            word = String::new();
+                            tokens.add(ch.to_string());
+                        }
+                    }
+                    // TODO handle + and - (for 1 -1 vs 1 - 1)
+                    '+' | '-' => {
+                        tokens.add(word);
+                        word = String::new();
+                        tokens.add(ch.to_string());
+                    }
                     _ => {
                         word.push(ch);
                     }
